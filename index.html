@@ -39,6 +39,15 @@
 .camera-score-controls:focus-within label{outline:2px solid var(--accent);outline-offset:2px}
 @media(max-width:1050px){.camera-score-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:680px){.camera-score-grid{grid-template-columns:1fr}}
+
+.camera-live-grid{margin-bottom:14px}
+.camera-live-tile{margin:0;overflow:hidden;border-radius:12px;background:#101a2b;color:#fff}
+.camera-live-frame{display:grid;place-items:center;aspect-ratio:16/9;background:#18263b}
+.camera-live-frame img{width:100%;height:100%;object-fit:contain;grid-area:1/1}
+.camera-live-frame span{grid-area:1/1;padding:10px;text-align:center}
+.camera-live-tile figcaption{padding:8px 12px}
+.camera-live-form{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.camera-live-form input{min-width:0;max-width:100%;width:320px;padding:8px;border:1px solid var(--line);border-radius:8px}
 </style>
 </head><body><div id="app" class="loading-app">Loading dashboard</div><div id="toast-host" aria-live="polite"></div><script>window.OMAI_DEMO=true;window.OMAI_DEMO_DATA={"user": {"name": "Demo viewer", "role": "Viewer"}, "stores": [{"store_id": "DEMO", "name": "Demo workspace"}], "store": {"store_id": "DEMO", "name": "Demo workspace"}, "summary": {"series": [], "sales_days": 0}, "forecast": {"status": "insufficient", "points": [], "note": "Sales records are required."}, "integration": {"weather": "Not connected", "traffic": "Not connected", "news": "Not connected"}, "isDemo": true, "timestamp": "Demo only", "alerts": [], "impacts": [], "sales": [], "inventory": [], "vendors": [], "expenses": [], "operations": [], "compliance": [], "tasks": [], "incidents": [], "events": [], "signals": []};</script><script>
 (function () {
@@ -352,11 +361,72 @@ function trafficScorecard(status) {
       ${i===2&&status?.door_counting===false?'<p class="small muted">Doorway crossing count was disabled at capture.</p>':''}</article>`;
   }).join('');
 }
+const liveCameraFeeds=[['road','Side View'],['fuel','Fuel Pumps'],['door','Front Door Outside']];
+let liveCameraOrigin='', liveCameraTimer;
+function isCameraOrigin(url) {
+  return url.protocol==='https:' && url.hostname.endsWith('.ts.net') &&
+    !url.username && !url.password && !url.search && !url.hash && !url.port && url.pathname==='/';
+}
+function renderCameraFeeds() {
+  return section('Live cameras','Private Tailscale connection') +
+    `<div class="panel"><form class="camera-live-form" id="cameraLiveForm">
+      <label for="cameraOrigin">Camera HTTPS address</label>
+      <input id="cameraOrigin" type="url" placeholder="https://device.tailnet.ts.net" value="${esc(liveCameraOrigin)}" required>
+      <button class="btn btn-primary" type="submit">Connect cameras</button>
+      <button class="btn btn-sm" type="button" id="stopCameraFeeds">Disconnect</button>
+    </form><p class="small muted" id="cameraLiveStatus" role="status">Use the Tailscale Serve address. This device must have access to the same private network.</p></div>
+    <div class="camera-score-grid camera-live-grid">${liveCameraFeeds.map(([role,label])=>`<figure class="camera-live-tile">
+      <div class="camera-live-frame"><span data-camera-message="${role}">Connect cameras to view</span><img data-camera-feed="${role}" alt="${label} camera" referrerpolicy="no-referrer" hidden></div>
+      <figcaption>${label}</figcaption></figure>`).join('')}</div>`;
+}
+function refreshCameraFeeds() {
+  const form=document.getElementById('cameraLiveForm');
+  if(!form||!liveCameraOrigin){clearInterval(liveCameraTimer);return;}
+  if(document.hidden)return;
+  for(const [role] of liveCameraFeeds) {
+    const img=document.querySelector(`[data-camera-feed="${role}"]`);
+    const message=document.querySelector(`[data-camera-message="${role}"]`);
+    img.onload=()=>{img.hidden=false;message.hidden=true;};
+    img.onerror=()=>{img.hidden=true;message.hidden=false;message.textContent='Feed unavailable';};
+    img.src=`${liveCameraOrigin}/preview/${role}?t=${Date.now()}`;
+  }
+}
+document.addEventListener('submit', event=>{
+  if(event.target.id!=='cameraLiveForm')return;
+  event.preventDefault();
+  const label=document.getElementById('cameraLiveStatus');
+  try {
+    const url=new URL(document.getElementById('cameraOrigin').value.trim());
+    if(!isCameraOrigin(url))throw new Error('Invalid private address');
+    liveCameraOrigin=url.origin;
+    clearInterval(liveCameraTimer);
+    refreshCameraFeeds();
+    liveCameraTimer=setInterval(refreshCameraFeeds,2000);
+    label.textContent='Requesting live previews over your private network.';
+  } catch {
+    label.textContent='Enter the HTTPS Tailscale Serve address ending in .ts.net.';
+  }
+});
+document.addEventListener('click', event=>{
+  if(event.target.id!=='stopCameraFeeds')return;
+  clearInterval(liveCameraTimer);
+  liveCameraOrigin='';
+  document.getElementById('cameraOrigin').value='';
+  for(const [role] of liveCameraFeeds) {
+    const img=document.querySelector(`[data-camera-feed="${role}"]`);
+    const message=document.querySelector(`[data-camera-message="${role}"]`);
+    img.onload=img.onerror=null;
+    img.removeAttribute('src');
+    img.hidden=true;
+    message.hidden=false;
+    message.textContent='Connect cameras to view';
+  }
+  document.getElementById('cameraLiveStatus').textContent='Cameras disconnected.';
+});
 function renderTraffic() {
-  return section('Vehicle Traffic','Outdoor camera scorecard') +
+  return section('Vehicle Traffic','Outdoor camera scorecard') + renderCameraFeeds() +
     `<div class="panel camera-score-controls">
       <a class="btn btn-primary" href="https://docs.google.com/spreadsheets/d/1YCzEfXkICCx9wYBVmGe_1pav9dlmATr1pcGBz6FsMGY/edit#gid=606696497" target="_blank" rel="noopener noreferrer">Open live counts in Google Sheets</a>
-      <a class="btn btn-sm" href="http://127.0.0.1:8765/" target="_blank" rel="noopener noreferrer">Open cameras on Backoffice PC</a>
       <p class="small muted">Live counts require access to the private Google Sheet. Check <strong>Last sync UTC</strong> there for the most recent update.</p>
       <label class="btn btn-sm" for="trafficSnapshotFile">Load a saved count snapshot</label>
       <input id="trafficSnapshotFile" type="file" accept=".json,application/json">
