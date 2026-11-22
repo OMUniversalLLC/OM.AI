@@ -27,6 +27,18 @@
 .pc-fill{height:100%;border-radius:99px;background:#6366f1;transition:width .3s ease}
 .pc-fill.elevated{background:#d8a12a}.pc-fill.critical{background:#dc586b}
 .pc-fill.unconfigured{background:#b5bfd1}
+
+.camera-score-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:14px}
+.camera-score-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.camera-score-head h3,.camera-score-head p{margin:0}
+.camera-score dl{margin:14px 0 0}
+.camera-score dl div{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid var(--line)}
+.camera-score dd{margin:0;font-weight:800;white-space:nowrap}
+.camera-score-controls label{cursor:pointer}
+.camera-score-controls input{position:absolute;width:1px;height:1px;clip-path:inset(50%)}
+.camera-score-controls:focus-within label{outline:2px solid var(--accent);outline-offset:2px}
+@media(max-width:1050px){.camera-score-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:680px){.camera-score-grid{grid-template-columns:1fr}}
 </style>
 </head><body><div id="app" class="loading-app">Loading dashboard</div><div id="toast-host" aria-live="polite"></div><script>window.OMAI_DEMO=true;window.OMAI_DEMO_DATA={"user": {"name": "Demo viewer", "role": "Viewer"}, "stores": [{"store_id": "DEMO", "name": "Demo workspace"}], "store": {"store_id": "DEMO", "name": "Demo workspace"}, "summary": {"series": [], "sales_days": 0}, "forecast": {"status": "insufficient", "points": [], "note": "Sales records are required."}, "integration": {"weather": "Not connected", "traffic": "Not connected", "news": "Not connected"}, "isDemo": true, "timestamp": "Demo only", "alerts": [], "impacts": [], "sales": [], "inventory": [], "vendors": [], "expenses": [], "operations": [], "compliance": [], "tasks": [], "incidents": [], "events": [], "signals": []};</script><script>
 (function () {
@@ -305,10 +317,77 @@ function renderWorkspace() {
     ['Settings','See what needs to be connected for live use.','settings'],
   ]);
 }
+const trafficMetrics = [
+  ['Side View','Channel 1','Road and driveway',[
+    ['Road crossings','roadTotal'],['Road direction 1','roadOne'],['Road direction 2','roadTwo'],
+    ['Vehicles entered','entered'],['Vehicles exited','exited'],['People visible','roadPeople']]],
+  ['Fuel Pumps','Channel 6','Pump, queue, and highway views',[
+    ['Vehicles at pumps','atPumps'],['Vehicles waiting','waiting'],['Vehicles moving in queue','moving'],
+    ['Vehicles in bypass lane','bypass'],['Highway crossings (trial)','highway'],['People visible','fuelPeople']]],
+  ['Front Door Outside','Channel 3','People at the storefront',[
+    ['People visible','doorPeople'],['People entered','doorIn'],['People exited','doorOut']]]
+];
+let trafficSnapshot = null;
+function trafficScorecard(status) {
+  const counts=status?.observed_crossings ?? {}, fuel=status?.fuel ?? {}, people=status?.people_now ?? {};
+  const total=(a,b)=>Number.isSafeInteger(a)&&Number.isSafeInteger(b)?a+b:null;
+  const direction1=counts.road_negative_to_positive, direction2=counts.road_positive_to_negative;
+  const byCamera=(role,value)=>status?.cameras?.[role]==='observing'||(Number.isSafeInteger(value)&&value>0)?value:null;
+  const metrics={
+    roadTotal:byCamera('road',total(direction1,direction2)), roadOne:byCamera('road',direction1), roadTwo:byCamera('road',direction2),
+    entered:byCamera('driveway',counts.entered), exited:byCamera('driveway',counts.exited), roadPeople:people.road,
+    atPumps:fuel.at_pumps, waiting:fuel.waiting, moving:fuel.queue_moving, bypass:fuel.bypass_zone, fuelPeople:people.fuel,
+    highway:status?.fuel_road_counting===true?byCamera('fuel_road',total(counts.fuel_road_negative_to_positive,counts.fuel_road_positive_to_negative)):null,
+    doorPeople:people.door, doorIn:status?.door_counting===true?byCamera('door',counts.door_entered):null,
+    doorOut:status?.door_counting===true?byCamera('door',counts.door_exited):null
+  };
+  const roles=['road','fuel','door'];
+  const countLabel=value=>Number.isSafeInteger(value)&&value>=0?value.toLocaleString('en-US'):'&mdash;';
+  return trafficMetrics.map(([name,channel,area,rows],i)=>{
+    const observed=status?.cameras?.[roles[i]];
+    const caption=observed==='observing'?'Observing at capture':observed==='unavailable'?'Unavailable at capture':'No snapshot';
+    return `<article class="panel camera-score"><div class="camera-score-head"><div><h3>${name}</h3><p class="small muted">${channel} · ${area}</p></div>${pill(caption,observed==='observing'?'ok':'info')}</div>
+      <dl>${rows.map(([label,key])=>`<div><dt>${label}</dt><dd>${countLabel(metrics[key])}</dd></div>`).join('')}</dl>
+      ${i===1?'<p class="small muted">Compare the highway trial against the Side View count before combining figures.</p>':''}
+      ${i===2&&status?.door_counting===false?'<p class="small muted">Doorway crossing count was disabled at capture.</p>':''}</article>`;
+  }).join('');
+}
 function renderTraffic() {
-  return section('Vehicle Traffic','Road, driveway, and fuel-lane counts.') +
-    moduleStatus('Traffic counters',['Road crossings','Driveway entries','Driveway exits','Vehicles at pumps','Vehicles waiting'], 'Local Vehicle Traffic monitor and private sync') +
-    workspaceGroup('Related views', [['Cameras','Check camera coverage and status.','cameras'],['Traffic and weather','Check road conditions separately from vehicle counts.','radar']]);
+  return section('Vehicle Traffic','Outdoor camera scorecard') +
+    `<div class="panel camera-score-controls">
+      <a class="btn btn-primary" href="http://127.0.0.1:8765/" target="_blank" rel="noopener noreferrer">Open live dashboard on Backoffice PC</a>
+      <label class="btn btn-sm" for="trafficSnapshotFile">Load a saved count snapshot</label>
+      <input id="trafficSnapshotFile" type="file" accept=".json,application/json">
+      <p class="small muted">On the Backoffice PC, save <a href="http://127.0.0.1:8765/status.json" target="_blank" rel="noopener noreferrer">traffic status JSON</a> and select it here. Counts stay in this tab until you reload or close it.</p>
+      <p class="small" id="trafficSnapshotStatus" role="status">${trafficSnapshot?'Snapshot for Florida business date '+esc(trafficSnapshot.florida_date)+' · saved counts':'Load a snapshot to see counts on this page. Live video opens in the Backoffice dashboard.'}</p>
+    </div><div class="camera-score-grid" id="trafficScorecard">${trafficScorecard(trafficSnapshot)}</div>
+    <p class="small muted">Road, driveway, and door crossings are daily totals. Pump, queue, bypass, and people-visible counts reflect the moment of capture.</p>` +
+    workspaceGroup('Related views', [['Cameras','Check camera coverage and status.','cameras'],['Traffic and weather','Review road conditions.','radar']]);
+}
+document.addEventListener('change', event=>{
+  if(event.target.id==='trafficSnapshotFile')loadTrafficSnapshot(event.target);
+});
+async function loadTrafficSnapshot(input) {
+  const file=input.files?.[0];
+  if(!file)return;
+  const statusLabel=document.getElementById('trafficSnapshotStatus');
+  if(!statusLabel)return;
+  try {
+    if(file.size>128000)throw new Error('Snapshot too large');
+    const status=JSON.parse(await file.text());
+    if(!status||!/^\d{4}-\d{2}-\d{2}$/.test(status.florida_date)||!status.cameras||!status.observed_crossings)
+      throw new Error('Missing traffic snapshot fields');
+    if(!['road','driveway','fuel','door'].every(role=>['observing','unavailable'].includes(status.cameras[role])))
+      throw new Error('Unknown camera status');
+    trafficSnapshot=status;
+    const scorecard=document.getElementById('trafficScorecard');
+    if(scorecard)scorecard.innerHTML=trafficScorecard(status);
+    statusLabel.textContent='Snapshot for Florida business date '+status.florida_date+' · saved counts';
+  } catch {
+    statusLabel.textContent='Unable to read this file. Choose the saved traffic status JSON.';
+  } finally {
+    input.value='';
+  }
 }
 function renderPurchases() {
   return section('Purchases','Track deliveries and compare invoices against the store audit.') +
