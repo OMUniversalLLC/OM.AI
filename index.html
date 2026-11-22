@@ -55,7 +55,13 @@
 const NAV=[['overview','◈','Overview'],['workspace','▦','All modules'],['sheets','▦','Google Sheets'],['radar','◉','OM Radar'],['impact','⌘','OM Impact'],['insights','▥','OM Insights'],['predict','⌁','OM Predict'],['alerts','◇','OM Alerts'],['watch','◌','OM Watch'],['cameras','▣','OM Cameras'],['traffic','↔','Vehicle Traffic'],['wifi','⌁','OM WiFi'],['pc','▣','OM PC'],['orchestrator','✦','OM Orchestrator'],['control','☷','OM Control'],['finance','＄','OM Finance'],['fuel','⛽','Fuel Sources'],['purchases','▤','Purchases'],['lottery','◇','Lottery'],['reports','▥','Reports'],['team','☷','Team & Incidents'],['compliance','▣','Compliance'],['settings','⚙','Settings']];
 const titleMap=Object.fromEntries(NAV.map(x=>[x[0],x[2]]));
 const demo=Boolean(window.OMAI_DEMO);
-const state={view:Object.hasOwn(titleMap,location.hash.slice(1))?location.hash.slice(1):'overview',data:null,storeId:null,busy:false,mobileMenu:false,scenario:0};
+function dashboardRoute(hash) {
+  const [view,query='']=hash.slice(1).split('?');
+  if(!Object.hasOwn(titleMap,view))return {view:'overview',camera:''};
+  const camera=view==='traffic'?new URLSearchParams(query).get('camera'):'';
+  return {view,camera:validCameraOrigin(camera)};
+}
+const state={view:dashboardRoute(location.hash).view,data:null,storeId:null,busy:false,mobileMenu:false,scenario:0};
 const $=s=>document.querySelector(s);
 const esc=x=>String(x==null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmtMoney=x=>x==null||x===''?'—':new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2}).format(Number(x));
@@ -368,13 +374,29 @@ function trafficScorecard(status) {
 }
 const liveCameraFeeds=[['road','Side View'],['fuel','Fuel Pumps'],['door','Front Door Outside']];
 const cameraOriginKey='om-universal.om-ai.camera-origin';
-let liveCameraOrigin=readCameraOrigin(), liveCameraTimer;
+const cameraLinkOrigin=dashboardRoute(location.hash).camera;
+let liveCameraOrigin=cameraLinkOrigin||readCameraOrigin(), liveCameraTimer;
+if(cameraLinkOrigin)rememberCameraOrigin(cameraLinkOrigin);
+function validCameraOrigin(input) {
+  if(!input)return '';
+  try {
+    const url=new URL(input);
+    return isCameraOrigin(url)?url.origin:'';
+  } catch {return '';}
+}
+function cameraBookmark(origin) {
+  return '#traffic?'+new URLSearchParams({camera:origin}).toString();
+}
+function refreshCameraBookmark() {
+  const link=document.getElementById('cameraBookmark');
+  if(!link)return;
+  link.hidden=!liveCameraOrigin;
+  if(liveCameraOrigin)link.href=cameraBookmark(liveCameraOrigin);
+  else link.removeAttribute('href');
+}
 function readCameraOrigin() {
   try {
-    const saved=localStorage.getItem(cameraOriginKey);
-    if(!saved)return '';
-    const url=new URL(saved);
-    return isCameraOrigin(url)?url.origin:'';
+    return validCameraOrigin(localStorage.getItem(cameraOriginKey));
   } catch {
     return '';
   }
@@ -399,7 +421,8 @@ function renderCameraFeeds() {
       <input id="cameraOrigin" type="url" placeholder="https://device.tailnet.ts.net" value="${esc(liveCameraOrigin)}" required>
       <button class="btn btn-primary" type="submit">Connect cameras</button>
       <button class="btn btn-sm" type="button" id="stopCameraFeeds">Disconnect and forget</button>
-    </form><p class="small muted" id="cameraLiveStatus" role="status">${liveCameraOrigin?'Using the camera address saved in this browser.':'Connect once to remember the Tailscale Serve address in this browser.'} This device must have access to the private network.</p></div>
+    </form><p class="small muted" id="cameraLiveStatus" role="status">${liveCameraOrigin?'Reconnecting automatically.':'Enter the Tailscale Serve address or open your saved camera link.'} This device must have access to the private network.</p>
+    <a id="cameraBookmark" ${liveCameraOrigin?'href="'+esc(cameraBookmark(liveCameraOrigin))+'"':'hidden'}>Open bookmarkable camera link</a></div>
     <div class="camera-score-grid camera-live-grid">${liveCameraFeeds.map(([role,label])=>`<figure class="camera-live-tile">
       <div class="camera-live-frame"><span data-camera-message="${role}">Connect cameras to view</span><img data-camera-feed="${role}" alt="${label} camera" referrerpolicy="no-referrer" hidden></div>
       <figcaption>${label}</figcaption></figure>`).join('')}</div>`;
@@ -444,6 +467,8 @@ document.addEventListener('submit', event=>{
     const url=new URL(document.getElementById('cameraOrigin').value.trim());
     if(!isCameraOrigin(url))throw new Error('Invalid private address');
     liveCameraOrigin=url.origin;
+    if(dashboardRoute(location.hash).camera)history.replaceState(null,'',cameraBookmark(liveCameraOrigin));
+    refreshCameraBookmark();
     document.getElementById('trafficHistorySource').href=url.origin+'/history.json';
     for(const img of document.querySelectorAll('[data-camera-feed]')) {
       img.hidden=true;
@@ -465,6 +490,8 @@ document.addEventListener('click', event=>{
   if(event.target.id!=='stopCameraFeeds')return;
   clearInterval(liveCameraTimer);
   liveCameraOrigin='';
+  if(dashboardRoute(location.hash).camera)history.replaceState(null,'','#traffic');
+  refreshCameraBookmark();
   const forgotten=rememberCameraOrigin('');
   document.getElementById('trafficHistorySource').href='http://127.0.0.1:8765/history.json';
   document.getElementById('cameraOrigin').value='';
@@ -683,9 +710,10 @@ document.addEventListener('submit',async event=>{
  }
 });
 addEventListener('hashchange',()=>{
-  const requested=location.hash.slice(1);
-  const next=Object.hasOwn(titleMap,requested)?requested:'overview';
-  if(next!==state.view){state.view=next;renderView();}
+  const {view,camera}=dashboardRoute(location.hash);
+  const changedCamera=Boolean(camera&&camera!==liveCameraOrigin);
+  if(changedCamera){liveCameraOrigin=camera;rememberCameraOrigin(camera);}
+  if(view!==state.view||changedCamera){state.view=view;renderView();}
 });
 
 const storesSheets={
