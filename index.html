@@ -78,7 +78,7 @@ function notify(msg,bad=false){const host=$('#toast-host');host.innerHTML=`<div 
 function renderShell(){
   const d=state.data;const nav= NAV.map((n,i)=>`${i===0||i===4?`<div class="nav-title">${i===0?'COMMAND CENTER':'WORKSPACE'}</div>`:''}<button class="nav-btn ${state.view===n[0]?'active':''}" data-nav="${n[0]}"><span class="nav-ico">${n[1]}</span><span class="nav-text">${n[2]}</span></button>`).join('');
   const stores=(d.stores||[]).map(s=>`<option value="${esc(s.store_id)}" ${s.store_id===state.storeId?'selected':''}>${esc(s.name)}</option>`).join('');
-  $('#app').className=''; $('#app').innerHTML=`${demo?'<div class="preview-flag">PUBLIC PREVIEW · No live store records connected</div>':''}
+  $('#app').className=''; $('#app').innerHTML=`${demo?'<div class="preview-flag" id="dashboard-status" role="status"></div>':''}
     <div class="shell"><aside class="sidebar"><div class="brand"><span class="brand-mark">OM</span><span><div class="brand-name">OM <em>AI</em></div><div class="brand-sub">Intelligence platform</div></span></div>${nav}<div class="side-bottom"><div><span class="online-dot"></span>${demo?'Preview mode':'Private Google account'}</div><div style="margin-top:7px">${esc(d.user.name||d.user.email||'Manager')} · ${esc(d.user.role)}</div><div class="tiny">Internal business intelligence</div></div></aside>
     <main class="main"><header class="header"><div><div class="eyebrow">OM Universal / Intelligence Center</div><div class="page-heading" id="page-title" tabindex="-1">${esc(titleMap[state.view])}</div></div><div class="header-right"><select id="store-select" class="store-select" aria-label="Select store">${stores}</select><button class="btn" data-action="refresh" title="Update from private spreadsheet">↻ Refresh</button><button class="btn btn-primary" data-action="add:task">＋ New task</button></div></header>
     <div class="mobile-nav">${NAV.map(n=>`<button class="nav-btn ${state.view===n[0]?'active':''}" data-nav="${n[0]}"><span class="nav-text">${esc(n[2])}</span></button>`).join('')}</div>
@@ -90,7 +90,10 @@ function renderView(){
   const node=$('#view');if(!node||!state.data)return;
   const views={overview:renderOverview,workspace:renderWorkspace,traffic:renderTraffic,purchases:renderPurchases,
     lottery:renderLottery,reports:renderReports,team:renderTeam,radar:renderRadar,impact:renderImpact,insights:renderInsights,predict:renderPredict,alerts:renderAlerts,watch:renderWatch,cameras:renderCameras,wifi:renderWifi,pc:renderPcIntelligence,orchestrator:renderOrchestrator,control:renderControl,finance:renderFinance,fuel:renderFuelSources,compliance:renderCompliance,settings:renderSettings};
+  clearInterval(liveCameraTimer);
   node.innerHTML=views[state.view]();
+  updateDashboardStatus();
+  if(state.view==='traffic'&&liveCameraOrigin)startCameraPreviews();
   $('#page-title').textContent=titleMap[state.view];
   document.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===state.view));
 }
@@ -379,6 +382,26 @@ function renderCameraFeeds() {
       <div class="camera-live-frame"><span data-camera-message="${role}">Connect cameras to view</span><img data-camera-feed="${role}" alt="${label} camera" referrerpolicy="no-referrer" hidden></div>
       <figcaption>${label}</figcaption></figure>`).join('')}</div>`;
 }
+function updateDashboardStatus() {
+  const banner=document.getElementById('dashboard-status');
+  if(!banner)return;
+  let message='OM AI Dashboard · Store records are private';
+  if(state.view==='traffic') {
+    const connected=document.querySelectorAll('[data-camera-feed][data-result="live"]').length;
+    const failed=document.querySelectorAll('[data-camera-feed][data-result="unavailable"]').length;
+    if(connected)message=`Traffic cameras · ${connected} of 3 feeds live`;
+    else if(!liveCameraOrigin)message='Traffic cameras · Ready to connect';
+    else if(failed===liveCameraFeeds.length)message='Traffic cameras · Feeds unavailable';
+    else message='Traffic cameras · Connecting';
+  }
+  if(banner.textContent!==message)banner.textContent=message;
+}
+function startCameraPreviews() {
+  clearInterval(liveCameraTimer);
+  updateDashboardStatus();
+  refreshCameraFeeds();
+  liveCameraTimer=setInterval(refreshCameraFeeds,2000);
+}
 function refreshCameraFeeds() {
   const form=document.getElementById('cameraLiveForm');
   if(!form||!liveCameraOrigin){clearInterval(liveCameraTimer);return;}
@@ -386,8 +409,8 @@ function refreshCameraFeeds() {
   for(const [role] of liveCameraFeeds) {
     const img=document.querySelector(`[data-camera-feed="${role}"]`);
     const message=document.querySelector(`[data-camera-message="${role}"]`);
-    img.onload=()=>{img.hidden=false;message.hidden=true;};
-    img.onerror=()=>{img.hidden=true;message.hidden=false;message.textContent='Feed unavailable';};
+    img.onload=()=>{img.hidden=false;message.hidden=true;img.dataset.result='live';updateDashboardStatus();};
+    img.onerror=()=>{img.hidden=true;message.hidden=false;message.textContent='Feed unavailable';img.dataset.result='unavailable';updateDashboardStatus();};
     img.src=`${liveCameraOrigin}/preview/${role}?t=${Date.now()}`;
   }
 }
@@ -399,9 +422,15 @@ document.addEventListener('submit', event=>{
     const url=new URL(document.getElementById('cameraOrigin').value.trim());
     if(!isCameraOrigin(url))throw new Error('Invalid private address');
     liveCameraOrigin=url.origin;
-    clearInterval(liveCameraTimer);
-    refreshCameraFeeds();
-    liveCameraTimer=setInterval(refreshCameraFeeds,2000);
+    for(const img of document.querySelectorAll('[data-camera-feed]')) {
+      img.hidden=true;
+      delete img.dataset.result;
+    }
+    for(const message of document.querySelectorAll('[data-camera-message]')) {
+      message.hidden=false;
+      message.textContent='Connecting camera';
+    }
+    startCameraPreviews();
     label.textContent='Requesting live previews over your private network.';
   } catch {
     label.textContent='Enter the HTTPS Tailscale Serve address ending in .ts.net.';
@@ -417,10 +446,12 @@ document.addEventListener('click', event=>{
     const message=document.querySelector(`[data-camera-message="${role}"]`);
     img.onload=img.onerror=null;
     img.removeAttribute('src');
+    delete img.dataset.result;
     img.hidden=true;
     message.hidden=false;
     message.textContent='Connect cameras to view';
   }
+  updateDashboardStatus();
   document.getElementById('cameraLiveStatus').textContent='Cameras disconnected.';
 });
 function renderTraffic() {
