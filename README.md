@@ -1,5 +1,8 @@
 # OM AI — Operations Monitoring & Artificial Intelligence
 
+> **Unified repository:** The original React operations dashboard source has been imported under `apps/operations-dashboard/`. Read [UNIFIED-WORKSPACE.md](UNIFIED-WORKSPACE.md) and [security/deployment guidance](docs/UNIFIED-SECURITY-AND-DEPLOYMENT.md) before deploying. Supabase human-user authentication is planned, **not yet connected**. The imported dashboard retains legacy Google login code, and no live accounts or camera connections have been activated.
+
+
 > **Deployment status:** source package and fictional preview only. The NVR, store Windows PC, Wi-Fi, POS, fuel sources, Gemini/OpenAI APIs, and Google Sheets are **not** connected by this GitHub commit. Follow `docs/SETUP.md` and verify all integrations before relying on readings.
 
 > **Public repository safety:** All IP addresses in examples are documentation placeholders. Credentials, actual camera-stream URLs, device inventory exports, and customer/employee information must stay outside this repository.
