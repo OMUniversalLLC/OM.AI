@@ -1,0 +1,15 @@
+[
+  {
+    "job_id":"aaa_daily",
+    "status":"success",
+    "finished_at":"2026-11-19T09:10:00Z",
+    "evidence_ref":"https://gasprices.aaa.com/",
+    "detail":"Verified AAA source snapshot; values still require review"
+  },
+  {
+    "job_id":"gasbuddy_daily",
+    "status":"needs_review",
+    "finished_at":"2026-11-19T09:15:00Z",
+    "detail":"Competing station price appears old; awaiting source timestamp verification"
+  }
+]

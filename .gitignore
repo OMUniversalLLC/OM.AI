@@ -1,0 +1,25 @@
+.env
+.env.*
+!.env.example
+*secret*
+.DS_Store
+node_modules/
+dist/
+
+# OM AI surveillance: keep footage, private credentials, local counts and runtime state out of git
+surveillance/*.sqlite3
+surveillance/*.sqlite3-*
+surveillance/*.log
+surveillance/.env
+surveillance/private-config*
+
+# OM WiFi Intelligence — local device/network secrets
+network-agent/config.json
+network-agent/private/
+network-agent/.env
+network-agent/**/__pycache__/
+
+# PC intelligence private measurements / keys
+pc-agent/data/
+pc-agent/config.local.json
+pc-agent/*.env

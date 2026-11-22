@@ -1,0 +1,15 @@
+NVR list position,Camera ID,Actual NVR camera name,Proposed future role,RTSP demonstrated,Name-to-stream verified,AI live enabled,Next observer task
+1,CAM01,SIDE VIEW,vehicle_entry_candidate,Yes,Yes,No,Verify driveway/road visibility first. No vehicle counting until a proper entry line is configured.
+2,CAM02,KITCHEN,kitchen_operations,Yes,Not verified,No,Check kitchen access and incidents; do not infer food safety from video alone.
+3,CAM03,FRONT DOOR OUTSIDE,store_door_entry_candidate,Not verified,Not verified,No,Complete and save native NVR people line-crossing rule; verify crossings and direction.
+4,CAM04,THIRD AISLE,aisle_activity,Not verified,Not verified,No,Review aisle traffic only after an agreed zone and accuracy test.
+5,CAM05,REGISTER OUTSIDE,counter_view_candidate,Not verified,Not verified,No,Verify whether this view covers queue and cashier zones.
+6,CAM06,PUMP SIDE VIEW,pump_dwell_candidate,Not verified,Not verified,No,Verify which pumps are visible and test vehicle dwell vs POS transactions.
+7,CAM07,SECOND AISLE,aisle_activity,Not verified,Not verified,No,Review customer flow; avoid identifying individuals.
+8,CAM08,REGISTER TOP,counter_occupancy_candidate,Not verified,Not verified,No,Potential independent customer/staff counter zones; camera angle unverified.
+9,CAM09,INSIDE COOLER,cooler_operations,Not verified,Not verified,No,Monitor access/activity; cooler temperature requires a sensor.
+10,CAM10,FIRST AND SECOND AILE,aisle_activity,Not verified,Not verified,No,Review traffic and shelf observations; no automatic theft claims.
+11,CAM11,REGISTER,counter_occupancy_candidate,Not verified,Not verified,No,Potential 25-second queue/staff-assistance alert after zone calibration.
+12,CAM12,CHIPS AISLE,aisle_activity,Not verified,Not verified,No,Review aisle movement and restocking.
+13,CAM13,BEER COOLER,cooler_operations,Not verified,Not verified,No,Review access and restocking; no automated age inference.
+14,CAM14,FRONT DOOR INSIDE,door_count_crosscheck,Not verified,Not verified,No,Cross-check entry events without double-counting the outside door camera.

@@ -1,0 +1,57 @@
+OM AI — QUICK START
+
+1. OPEN THE DESIGN PREVIEW
+   preview/OM-AI-preview.html
+   All displayed values are illustrative (not your real store data).
+
+2. CREATE A NEW, SEPARATE GOOGLE APPS SCRIPT PROJECT
+   https://script.google.com/
+   Add the six .gs files and three HTML files under apps-script/.
+   Replace appsscript.json manifest with the supplied manifest.
+
+3. SET OWNER_EMAIL IN SCRIPT PROPERTIES
+   Run setupOmAi(). It creates a separate private OM AI Google Sheet.
+   Verify Quick-C coordinates; add locations for Inverness and Vape Store.
+
+4. DEPLOY THE WEB APP
+   Execute as: USER ACCESSING THE WEB APP.
+   Add approved Google emails to Users and share the Sheet only with TRUSTED staff.
+   WARNING: A shared underlying Sheet exposes all stores' tab data to its readers.
+
+5. CONNECT OPTIONAL SERVICES
+   TOMTOM_API_KEY  = live road speed/incident data
+   GEMINI_API_KEY  = optional AI assistant
+   GEMINI_MODEL    = optional model name (defaults to gemini-2.5-flash)
+   Run installOmAiHourlyMonitoring() for hourly source refreshes.
+
+6. IMPORT STORE DATA
+   First normalize historical daily sales into the format in samples/normalized-sales.csv.
+   Run importNormalizedSalesFromSheet('SHEET_ID','NormalizedSales').
+   Do not import mixed 2023–2026 reports without checking their date/field mapping.
+
+7. LINK FROM EXISTING GITHUB DASHBOARD
+   Deploy this privately first. Then optionally use integration/OmAiLauncher.tsx.
+   DO NOT REPLACE the existing google-apps-script/Code.gs login gateway.
+
+FULL GUIDE: docs/SETUP.md
+PRIVACY:    docs/SECURITY.md
+DATA:       docs/DATA-DICTIONARY.md
+TEST:       node tests/test.mjs
+
+14-CAMERA SURVEILLANCE MODULE
+-----------------------------
+Open preview/OM-AI-preview.html → OM Cameras. This is illustrative.
+For actual cameras, read docs/SURVEILLANCE-14-CAMERAS.md and use surveillance/ folder.
+No CCTV or private POS accounts are connected by default.
+
+=== NEW OM WIFI INTELLIGENCE ===
+1. Open preview/OM-AI-preview.html and select OM WiFi. Example statuses are DEMO ONLY.
+2. On the store Windows 11 PC: copy network-agent/config.example.json to config.json.
+3. Verify the iLink NVR IP/port, then run network-agent/run-once.bat.
+4. Read network-agent/README.md for camera stream checks, Wi-Fi client roster, optional signed upload.
+5. Add apps-script/WifiMonitor.gs to your PRIVATE Apps Script project, update related existing .gs files, and run setupOmAi() to create new tabs.
+6. Connect an approved router client export to list truly associated Wi-Fi clients; ARP alone cannot do this.
+NOT LIVE: No NVR/cameras/router/Google accounts have been remotely accessed or deployed by this package.
+
+
+PC intelligence: See docs/PC-INTELLIGENCE-ORCHESTRATOR.md. On Windows, run pc-agent/launch-pc-app.bat after installing Python + psutil; this is local-only until the signed private sync is configured.
