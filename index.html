@@ -355,11 +355,13 @@ function trafficScorecard(status) {
 function renderTraffic() {
   return section('Vehicle Traffic','Outdoor camera scorecard') +
     `<div class="panel camera-score-controls">
-      <a class="btn btn-primary" href="http://127.0.0.1:8765/" target="_blank" rel="noopener noreferrer">Open live dashboard on Backoffice PC</a>
+      <a class="btn btn-primary" href="https://docs.google.com/spreadsheets/d/1YCzEfXkICCx9wYBVmGe_1pav9dlmATr1pcGBz6FsMGY/edit#gid=606696497" target="_blank" rel="noopener noreferrer">Open live counts in Google Sheets</a>
+      <a class="btn btn-sm" href="http://127.0.0.1:8765/" target="_blank" rel="noopener noreferrer">Open cameras on Backoffice PC</a>
+      <p class="small muted">Live counts require access to the private Google Sheet. Check <strong>Last sync UTC</strong> there for the most recent update.</p>
       <label class="btn btn-sm" for="trafficSnapshotFile">Load a saved count snapshot</label>
       <input id="trafficSnapshotFile" type="file" accept=".json,application/json">
       <p class="small muted">On the Backoffice PC, save <a href="http://127.0.0.1:8765/status.json" target="_blank" rel="noopener noreferrer">traffic status JSON</a> and select it here. Counts stay in this tab until you reload or close it.</p>
-      <p class="small" id="trafficSnapshotStatus" role="status">${trafficSnapshot?'Snapshot for Florida business date '+esc(trafficSnapshot.florida_date)+' · saved counts':'Load a snapshot to see counts on this page. Live video opens in the Backoffice dashboard.'}</p>
+      <p class="small" id="trafficSnapshotStatus" role="status">${trafficSnapshot?'Snapshot for Florida business date '+esc(trafficSnapshot.florida_date)+' · saved counts':'Load a snapshot to see counts in these cards.'}</p>
     </div><div class="camera-score-grid" id="trafficScorecard">${trafficScorecard(trafficSnapshot)}</div>
     <p class="small muted">Road, driveway, and door crossings are daily totals. Pump, queue, bypass, and people-visible counts reflect the moment of capture.</p>` +
     workspaceGroup('Related views', [['Cameras','Check camera coverage and status.','cameras'],['Traffic and weather','Review road conditions.','radar']]);
