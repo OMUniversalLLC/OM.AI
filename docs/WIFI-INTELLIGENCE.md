@@ -6,14 +6,9 @@
 
 OM WiFi provides five views on one desktop/mobile page: PC Wi-Fi condition, known device reachability, recent ARP/router observations, each of 14 NVR channel stream checks, and timestamped status changes. Nothing should be shown as live until a signed store-agent heartbeat is received.
 
-### Confirmed equipment from the user's surveillance report
+### Equipment configuration
 
-- 14 cameras connected to an iLink Professionals iSNVR32P-4K3 recorder (32 recording capacity does not indicate 32 AI channels).
-- Existing local NVR web and RTSP access, with channels 1 and 2 substream playback previously demonstrated. All-channel verification is outstanding.
-- GMKtec NucBox M7 Ultra running Windows 11 Pro with AMD Ryzen 7 PRO 6850U / 16 GB memory.
-- NVR built-in AI enabled, but saved recognition events and post-restart recording verification remain pending.
-
-The `surveillance/cameras.json` camera names are unchanged. The Wi-Fi module **does not assume cameras are wirelessly connected**: many NVR cameras use wired PoE. We only display known physical connection type when corroborated by router/controller/NVR records.
+Keep actual equipment and channel names in the private site profile. The public configuration uses sample labels. The Wi-Fi dashboard displays a connection type when the router, controller, or recorder provides evidence.
 
 ## Data flow
 

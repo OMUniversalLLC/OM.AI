@@ -1,6 +1,6 @@
 # OM AI WiFi Intelligence — Store Windows PC
 
-This monitor is designed for **Quick-C's existing GMKtec Windows 11 Pro PC** and the existing **iLink iSNVR32P-4K3 recorder**. It does **not** require buying new cameras. It never makes network-wide scans and does not alter router/NVR settings. All data stays local unless you explicitly enable signed export.
+This monitor runs on a Windows PC alongside a locally configured recorder. It never makes network-wide scans and does not alter router/NVR settings. All data stays local unless you explicitly enable signed export.
 
 ## What it actually knows
 

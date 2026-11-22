@@ -12,6 +12,13 @@ import threading
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+def load_camera_config():
+    root = Path(__file__).resolve().parent
+    local = root / "cameras.local.json"
+    path = local if local.is_file() else root / "cameras.json"
+    return json.loads(path.read_text(encoding="utf-8-sig"))
+
+
 ALLOWED_METRICS = {
     'vehicle_entry', 'vehicle_exit', 'road_vehicle', 'pump_dwell',
     'store_door_entry', 'carwash_entry', 'carwash_exit', 'delivery_vehicle',

@@ -6,7 +6,7 @@ Frigate camera names must match CAM01..CAM14. No stream or image is transferred.
 """
 import json, os
 from urllib.request import Request,urlopen
-from pathlib import Path
+from analytics import load_camera_config
 
 LOCAL=os.getenv('OM_EDGE_URL','http://127.0.0.1:8766').rstrip('/')
 FRIGATE=os.environ.get('OM_FRIGATE_URL','').rstrip('/')
@@ -22,7 +22,7 @@ if __name__=='__main__':
         headers['Authorization']='Bearer '+os.environ['OM_FRIGATE_API_KEY']
     with urlopen(Request(FRIGATE+'/api/stats',headers=headers),timeout=10) as res:
         data=json.load(res)
-    config=json.loads((Path(__file__).resolve().parent/'cameras.json').read_text())
+    config=load_camera_config()
     stats=data.get('cameras') or {}
     for c in config['cameras']:
         name=c['id']

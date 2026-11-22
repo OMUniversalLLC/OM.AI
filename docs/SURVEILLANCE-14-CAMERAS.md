@@ -1,5 +1,3 @@
-> **SUPERSEDED CAMERA NAMES**: The CAM01–CAM14 labels below were an initial hypothetical layout. Use the actual camera list and safety gates in `NVR-ACTUAL-INVENTORY-AND-AI-PLAN.md` and `surveillance/cameras.json`. The old suggested dedicated road/car-wash cameras are **not verified** by the real NVR inventory.
-
 # OM AI — 14-camera surveillance, traffic, fuel funnel and car wash monitor
 
 **Implementation stage:** Usable local event collector, optional Frigate/MQTT adapter, Apps Script aggregate ingestion, dashboard UI and simulated browser preview. **No cameras or store POS hardware are connected to this package.** Every camera-to-zone assignment below is a proposed template, NOT a claim about the store's actual 14 camera angles.
@@ -24,7 +22,7 @@
 
 ### 14-camera proposed role mapping
 
-`surveillance/cameras.json` contains CAM01–CAM14, assigned in the following order: entrance, exit, road frontage, north pumps, south pumps, diesel pumps, forecourt, store entrance, checkout, sales floor, wash entrance, wash exit, wash bay, deliveries/rear. **Change these to reflect the actual DVR channels before enabling detection.** If one camera covers more than one zone, counts may require a separate tracked-object/ROI adapter to avoid duplicating a person or vehicle.
+`surveillance/cameras.json` provides disabled generic examples. Save the verified profile as `surveillance/cameras.local.json`. If one camera covers multiple zones, validate tracked-object deduplication before using totals.
 
 ## Components
 

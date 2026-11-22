@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OM AI Vehicle Traffic</title>
+<style>
+:root{color-scheme:dark;font:15px system-ui,sans-serif;color:#e9f0f8;background:#101820}
+*{box-sizing:border-box}
+body{margin:0}
+main{max-width:1450px;margin:auto;padding:30px clamp(14px,4vw,44px)}
+h1{font-size:clamp(28px,5vw,48px);margin:0;letter-spacing:-.035em}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+#date,footer,.status{color:#afc2d1}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:14px}
+article,details{background:#192630;border:1px solid #3a515d;border-radius:12px;overflow:hidden}
+article header,dl{margin:0;padding:13px}
+article header{align-items:center}
+h2{font-size:17px;margin:0}
+.status{font-size:.84rem}
+.status.live{color:#77e5bd}
+.feed{position:relative;aspect-ratio:704 / 480;background:#080e14;display:grid;place-items:center}
+.feed img{width:100%;height:100%;object-fit:contain;position:absolute}
+.feed span{color:#afc2d1}
+dl{display:grid;gap:4px}
+dl div{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #354652}
+dl div:last-child{border-bottom:0}
+dd{margin:0;font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+details{padding:14px;margin-top:18px}
+summary{cursor:pointer}
+.scroll{overflow:auto}
+table{border-collapse:collapse;width:100%;text-align:left;margin-top:8px;white-space:nowrap}
+th,td{padding:8px;border-bottom:1px solid #354652}
+footer{font-size:.87rem;line-height:1.5;margin-top:14px}
+</style>
+</head>
+<body>
+<main>
+<header><h1>OM AI Vehicle Traffic</h1><div id="date">Waiting for monitor</div></header>
+<p id="sheetSync" class="status" role="status">Google Sheets · Checking</p>
+<div class="grid">
+<article>
+<header><h2>Side view · Channel 1</h2><span id="roadStatus" class="status">Connecting</span></header>
+<div class="feed"><span>Camera preview unavailable</span><img id="roadPreview" alt="Side view live camera" hidden></div>
+<dl>
+<div><dt>Road crossings today</dt><dd id="roadTotal">—</dd></div>
+<div><dt>Road direction 1 / 2</dt><dd id="directions">—</dd></div>
+<div><dt>Vehicles entered today</dt><dd id="entries">—</dd></div>
+<div><dt>Vehicles exited today</dt><dd id="exits">—</dd></div>
+<div><dt>People visible now</dt><dd id="roadPeople">—</dd></div>
+</dl>
+</article>
+<article>
+<header><h2>Fuel pumps · Channel 6</h2><span id="fuelStatus" class="status">Connecting</span></header>
+<div class="feed"><span>Camera preview unavailable</span><img id="fuelPreview" alt="Fuel pump live camera" hidden></div>
+<dl>
+<div><dt>Waiting now</dt><dd id="waiting">—</dd></div>
+<div><dt>Moving in queue</dt><dd id="moving">—</dd></div>
+<div><dt>Vehicles at pumps now</dt><dd id="atPumps">—</dd></div>
+<div><dt>In bypass lane now</dt><dd id="bypass">—</dd></div>
+<div><dt>People visible now</dt><dd id="fuelPeople">—</dd></div>
+<div><dt>Highway crossings today (trial)</dt><dd id="fuelRoad">—</dd></div>
+</dl>
+</article>
+<article>
+<header><h2>Front door outside · Channel 3</h2><span id="doorStatus" class="status">Connecting</span></header>
+<div class="feed"><span>Camera preview unavailable</span><img id="doorPreview" alt="Front door outside live camera" hidden></div>
+<dl>
+<div><dt>Door crossings</dt><dd id="doorMode">—</dd></div>
+<div><dt>People visible now</dt><dd id="doorPeople">—</dd></div>
+<div><dt>People entered today</dt><dd id="doorIn">—</dd></div>
+<div><dt>People exited today</dt><dd id="doorOut">—</dd></div>
+</dl>
+</article>
+</div>
+<details><summary>Daily crossing history</summary><div class="scroll">
+<table><thead><tr><th>Florida date</th><th>Side view road</th><th>Fuel camera highway trial</th><th>Vehicles in</th><th>Vehicles out</th><th>People in</th><th>People out</th></tr></thead><tbody id="history"></tbody></table>
+</div><p id="historyMessage" hidden></p></details>
+<footer>Pink dots mark detected people. Green dots mark detected vehicles. People visible now is a per-camera estimate and may show the same person in multiple views. The fuel camera highway trial counts separately from Side View. Pump counts estimate occupancy.</footer>
+</main>
+<script>
+const get = id => document.getElementById(id);
+const set = (id, value) => { get(id).textContent = value ?? '—'; };
+const feeds = ['road', 'fuel', 'door'];
+const labels = ['road_negative_to_positive', 'road_positive_to_negative'];
+const fuelRoadLabels = ['fuel_road_negative_to_positive', 'fuel_road_positive_to_negative'];
+function showFeed(key, active) {
+  const status = get(key + 'Status');
+  status.classList.toggle('live', active);
+  status.textContent = active ? 'Live' : 'Awaiting video';
+  const image = get(key + 'Preview');
+  if (active) {
+    image.onload = () => { image.hidden = false; };
+    image.onerror = () => { image.hidden = true; };
+    image.src = '/preview/' + key + '?t=' + Date.now();
+  } else {
+    image.onload = null;
+    image.hidden = true;
+    image.removeAttribute('src');
+  }
+}
+async function read(path) {
+  const response = await fetch(path, {cache:'no-store', signal:AbortSignal.timeout(3000)});
+  if (!response.ok) throw Error('Monitor unavailable');
+  return response.json();
+}
+async function refresh() {
+  try {
+    const data = await read('/status.json');
+    const c = data.observed_crossings;
+    const road = c[labels[0]] + c[labels[1]];
+    set('date', data.florida_date + ' · Eastern Time');
+    const sync = data.sheet_sync;
+    const lastSync = sync?.last_success ? new Date(sync.last_success).toLocaleTimeString() : '';
+    const sheetMessage = sync?.state === 'synced' ? 'Last synced ' + lastSync :
+      sync?.state === 'starting' ? 'Connecting' : sync?.state === 'error' ?
+      sync.detail + (lastSync ? ' Last success ' + lastSync : '') : 'Setup required';
+    set('sheetSync', 'Google Sheets · ' + sheetMessage);
+    for (const feed of feeds) showFeed(feed, data.cameras[feed] === 'observing');
+    set('roadTotal', data.cameras.road === 'observing' || road ? road : null);
+    set('directions', data.cameras.road === 'observing' || road ? c[labels[0]] + ' / ' + c[labels[1]] : null);
+    for (const [id, key] of [['entries','entered'],['exits','exited']]) {
+      set(id, data.cameras.driveway === 'observing' || c[key] ? c[key] : null);
+    }
+    set('waiting', data.fuel?.waiting);
+    set('moving', data.fuel?.queue_moving);
+    set('atPumps', data.fuel?.at_pumps);
+    set('bypass', data.fuel?.bypass_zone);
+    for (const feed of feeds) set(feed + 'People', data.people_now?.[feed]);
+    const highway = c[fuelRoadLabels[0]] + c[fuelRoadLabels[1]];
+    set('fuelRoad', data.fuel_road_counting && (data.cameras.fuel_road === 'observing' || highway) ? highway : null);
+    set('doorMode', data.door_counting ? 'Enabled' : 'Line needed');
+    set('doorIn', data.door_counting && (data.cameras.door === 'observing' || c.door_entered) ? c.door_entered : null);
+    set('doorOut', data.door_counting && (data.cameras.door === 'observing' || c.door_exited) ? c.door_exited : null);
+  } catch {
+    set('sheetSync', 'Google Sheets · Monitor unavailable');
+    for (const feed of feeds) {
+      showFeed(feed, false);
+      set(feed + 'Status', 'Monitor unavailable');
+    }
+    for (const id of ['roadTotal','directions','entries','exits','waiting','moving','atPumps','bypass','doorIn','doorOut','doorMode','roadPeople','fuelPeople','doorPeople','fuelRoad']) set(id, null);
+  } finally {
+    setTimeout(refresh, 1200);
+  }
+}
+async function history() {
+  const tbody = get('history');
+  const message = get('historyMessage');
+  try {
+    const dates = await read('/history.json');
+    tbody.replaceChildren();
+    for (const [date, c] of Object.entries(dates).sort(([a], [b]) => b.localeCompare(a))) {
+      const row = tbody.insertRow();
+      const road = (c[labels[0]] ?? 0) + (c[labels[1]] ?? 0);
+      const highway = fuelRoadLabels.some(key => key in c) ?
+        (c[fuelRoadLabels[0]] ?? 0) + (c[fuelRoadLabels[1]] ?? 0) : null;
+      for (const value of [date,road,highway,c.entered ?? 0,c.exited ?? 0,c.door_entered,c.door_exited]) {
+        row.insertCell().textContent = value ?? '—';
+      }
+    }
+    message.hidden = tbody.rows.length !== 0;
+    message.textContent = 'No crossings saved yet.';
+  } catch {
+    message.hidden = false;
+    message.textContent = 'History unavailable.';
+  }
+}
+document.querySelector('details').addEventListener('toggle', event => {
+  if (event.target.open) history();
+});
+refresh();
+</script>
+</body>
+</html>

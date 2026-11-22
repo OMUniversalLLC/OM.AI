@@ -7,7 +7,7 @@ mqtt:
 cameras:
   CAM01:
     enabled: false
-    # SIDE VIEW — Verify driveway/road visibility first. No vehicle counting until a proper entry line is configured.
+    # Camera 01 — Verify the channel, recording, and analytics before enabling.
     ffmpeg:
       inputs:
         - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
@@ -19,7 +19,7 @@ cameras:
 
   CAM02:
     enabled: false
-    # KITCHEN — Check kitchen access and incidents; do not infer food safety from video alone.
+    # Camera 02 — Verify the channel, recording, and analytics before enabling.
     ffmpeg:
       inputs:
         - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
@@ -31,7 +31,7 @@ cameras:
 
   CAM03:
     enabled: false
-    # FRONT DOOR OUTSIDE — Complete and save native NVR people line-crossing rule; verify crossings and direction.
+    # Camera 03 — Verify the channel, recording, and analytics before enabling.
     ffmpeg:
       inputs:
         - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
@@ -43,7 +43,7 @@ cameras:
 
   CAM04:
     enabled: false
-    # THIRD AISLE — Review aisle traffic only after an agreed zone and accuracy test.
+    # Camera 04 — Verify the channel, recording, and analytics before enabling.
     ffmpeg:
       inputs:
         - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
@@ -55,7 +55,7 @@ cameras:
 
   CAM05:
     enabled: false
-    # REGISTER OUTSIDE — Verify whether this view covers queue and cashier zones.
+    # Camera 05 — Verify the channel, recording, and analytics before enabling.
     ffmpeg:
       inputs:
         - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
@@ -67,7 +67,7 @@ cameras:
 
   CAM06:
     enabled: false
-    # PUMP SIDE VIEW — Verify which pumps are visible and test vehicle dwell vs POS transactions.
+    # Camera 06 — Verify the channel, recording, and analytics before enabling.
     ffmpeg:
       inputs:
         - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
@@ -79,7 +79,7 @@ cameras:
 
   CAM07:
     enabled: false
-    # SECOND AISLE — Review customer flow; avoid identifying individuals.
+    # Camera 07 — Verify the channel, recording, and analytics before enabling.
     ffmpeg:
       inputs:
         - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
@@ -91,7 +91,7 @@ cameras:
 
   CAM08:
     enabled: false
-    # REGISTER TOP — Potential independent customer/staff counter zones; camera angle unverified.
+    # Camera 08 — Verify the channel, recording, and analytics before enabling.
     ffmpeg:
       inputs:
         - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
@@ -103,7 +103,7 @@ cameras:
 
   CAM09:
     enabled: false
-    # INSIDE COOLER — Monitor access/activity; cooler temperature requires a sensor.
+    # Camera 09 — Verify the channel, recording, and analytics before enabling.
     ffmpeg:
       inputs:
         - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
@@ -115,7 +115,7 @@ cameras:
 
   CAM10:
     enabled: false
-    # FIRST AND SECOND AILE — Review traffic and shelf observations; no automatic theft claims.
+    # Camera 10 — Verify the channel, recording, and analytics before enabling.
     ffmpeg:
       inputs:
         - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
@@ -127,7 +127,7 @@ cameras:
 
   CAM11:
     enabled: false
-    # REGISTER — Potential 25-second queue/staff-assistance alert after zone calibration.
+    # Camera 11 — Verify the channel, recording, and analytics before enabling.
     ffmpeg:
       inputs:
         - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
@@ -139,7 +139,7 @@ cameras:
 
   CAM12:
     enabled: false
-    # CHIPS AISLE — Review aisle movement and restocking.
+    # Camera 12 — Verify the channel, recording, and analytics before enabling.
     ffmpeg:
       inputs:
         - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
@@ -151,7 +151,7 @@ cameras:
 
   CAM13:
     enabled: false
-    # BEER COOLER — Review access and restocking; no automated age inference.
+    # Camera 13 — Verify the channel, recording, and analytics before enabling.
     ffmpeg:
       inputs:
         - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
@@ -163,7 +163,7 @@ cameras:
 
   CAM14:
     enabled: false
-    # FRONT DOOR INSIDE — Cross-check entry events without double-counting the outside door camera.
+    # Camera 14 — Verify the channel, recording, and analytics before enabling.
     ffmpeg:
       inputs:
         - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
@@ -172,4 +172,3 @@ cameras:
       track: [person]
     detect:
       enabled: true
-

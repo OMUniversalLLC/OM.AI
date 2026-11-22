@@ -4,10 +4,10 @@ Camera-zone polygons in this generated file are placeholders and MUST be edited
 against each actual camera view before enabling; no connection or counting happens.
 """
 from pathlib import Path
-import json
+from analytics import load_camera_config
 
 root=Path(__file__).resolve().parent
-config=json.loads((root/'cameras.json').read_text())
+config=load_camera_config()
 lines=["# OM AI — 14 proposed channels; all DISABLED until RTSP URLs and zones verified.",
        "# Do not publish RTSP credentials or this completed config to public GitHub.",
        "mqtt:","  host: MQTT_BROKER_PRIVATE_HOST","  user: MQTT_USER_REPLACE","  password: MQTT_PASSWORD_REPLACE",

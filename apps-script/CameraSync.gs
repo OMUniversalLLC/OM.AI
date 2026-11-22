@@ -2,32 +2,41 @@
  * Public Apps Script doPost is a minimal signed intake; never send raw CCTV.
  * Set a 32+ character OM_CAMERA_SYNC_SECRET in Script Properties, not the Sheet.
  */
-var OM_CAMERA_ROLE_PLAN_ = [
- ['CAM01','SIDE VIEW','activity_only','Verify driveway/road visibility first. No vehicle counting until a proper entry line is configured.'],
- ['CAM02','KITCHEN','activity_only','Check kitchen access and incidents; do not infer food safety from video alone.'],
- ['CAM03','FRONT DOOR OUTSIDE','activity_only','Complete and save native NVR people line-crossing rule; verify crossings and direction.'],
- ['CAM04','THIRD AISLE','activity_only','Review aisle traffic only after an agreed zone and accuracy test.'],
- ['CAM05','REGISTER OUTSIDE','activity_only','Verify whether this view covers queue and cashier zones.'],
- ['CAM06','PUMP SIDE VIEW','activity_only','Verify which pumps are visible and test vehicle dwell vs POS transactions.'],
- ['CAM07','SECOND AISLE','activity_only','Review customer flow; avoid identifying individuals.'],
- ['CAM08','REGISTER TOP','activity_only','Potential independent customer/staff counter zones; camera angle unverified.'],
- ['CAM09','INSIDE COOLER','activity_only','Monitor access/activity; cooler temperature requires a sensor.'],
- ['CAM10','FIRST AND SECOND AILE','activity_only','Review traffic and shelf observations; no automatic theft claims.'],
- ['CAM11','REGISTER','activity_only','Potential 25-second queue/staff-assistance alert after zone calibration.'],
- ['CAM12','CHIPS AISLE','activity_only','Review aisle movement and restocking.'],
- ['CAM13','BEER COOLER','activity_only','Review access and restocking; no automated age inference.'],
- ['CAM14','FRONT DOOR INSIDE','activity_only','Cross-check entry events without double-counting the outside door camera.']
-];
+var OM_CAMERA_ROLE_PLAN_ = Array.from({length: 14}, function(_, index) {
+  var number = String(index + 1).padStart(2, '0');
+  return ['CAM' + number, 'Camera ' + number, 'activity_only',
+    'Verify the channel, recording, and analytics before enabling.'];
+});
+
+function omPrivateCameraPlan_() {
+  var raw = omProps_().getProperty('OM_PRIVATE_CAMERA_PLAN');
+  if (!raw) return null;
+  var rows = JSON.parse(raw);
+  if (!Array.isArray(rows) || !rows.length || rows.length > 14) {
+    throw new Error('Invalid private camera plan');
+  }
+  var seen = {};
+  rows.forEach(function(row) {
+    if (!Array.isArray(row) || row.length !== 4 || !row.every(function(value) {
+      return typeof value === 'string' && value.trim() && value.length <= 300;
+    }) || !/^CAM(?:0[1-9]|1[0-4])$/.test(row[0]) || seen[row[0]] || row[2] !== 'activity_only') {
+      throw new Error('Invalid private camera plan row');
+    }
+    seen[row[0]] = true;
+  });
+  return rows;
+}
+
 var OM_CAMERA_METRICS_ = ['vehicle_entry','vehicle_exit','road_vehicle','pump_dwell','store_door_entry',
  'carwash_entry','carwash_exit','delivery_vehicle','fuel_transaction','carwash_paid','carwash_controller_cycle','counter_wait_alert'];
 
 function omSeedCameras_() {
   var existing=omRead_('CameraConfig');
   var ids={};existing.forEach(function(r){ ids[r.store_id+'|'+r.camera_id]=true; });
-  OM_CAMERA_ROLE_PLAN_.forEach(function(c){
+  (omPrivateCameraPlan_() || OM_CAMERA_ROLE_PLAN_).forEach(function(c){
     if (!ids['QUICKC|'+c[0]]) omAppend_('CameraConfig',{
       camera_id:c[0],store_id:'QUICKC',name:c[1],role:c[2],observer:'Unassigned',
-      task:c[3],status:'not_connected',last_seen:'',secure_view_url:'',notes:'Actual NVR list name; analytics disabled. Verify stream-to-camera mapping, view angle, recording and detection event before enabling.'
+      task:c[3],status:'not_connected',last_seen:'',secure_view_url:'',notes:'Camera inventory; analytics disabled. Verify stream-to-camera mapping, view angle, recording and detection event before enabling.'
     });
   });
 }
@@ -40,11 +49,13 @@ function omSeedCameras_() {
 function omAlignCameraNamesToActualNvr(confirmation) {
   omOwner_();
   if (confirmation !== 'REPLACE_HYPOTHETICAL_CAMERA_PLAN') throw new Error('Confirmation phrase required');
+  var plan = omPrivateCameraPlan_();
+  if (!plan) throw new Error('Set OM_PRIVATE_CAMERA_PLAN before aligning names');
   var existing = omForStore_(omRead_('CameraConfig'), 'QUICKC');
   var byId = {}; existing.forEach(function(c){byId[c.camera_id] = c;});
   return omLock_(function(){
     var count=0;
-    OM_CAMERA_ROLE_PLAN_.forEach(function(c){
+    plan.forEach(function(c){
       if (byId[c[0]]) {
         omPatch_('CameraConfig',c[0],{
           name:c[1],role:'activity_only',task:c[3],status:'not_connected',last_seen:'',
@@ -59,7 +70,7 @@ function omAlignCameraNamesToActualNvr(confirmation) {
       }
       count++;
     });
-    omLog_('camera_inventory_alignment','QUICKC','14','Real NVR names aligned; analytics not enabled');
+    omLog_('camera_inventory_alignment','QUICKC',String(count),'Private NVR names aligned; analytics not enabled');
     return {ok:true,cameras:count,live_cameras_connected:0};
   });
 }

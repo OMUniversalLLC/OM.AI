@@ -20,8 +20,8 @@ for n in range(7):
     matches=[x['inside_sales'] for x in sales if date.fromisoformat(x['date']).weekday()==d.weekday()][-8:]
     weighted=sum(x*(i+1) for i,x in enumerate(matches))/sum(range(1,len(matches)+1))
     fc.append({'date':str(d),'expected':round(weighted,2),'lower':round(weighted*.85,2),'upper':round(weighted*1.15,2),'sample':len(matches)})
-store={'store_id':'QUICKC','name':'Quick-C SUNOCO — Plant City','address':'3801 Paul Buchman Hwy, Plant City, FL 33565, USA','latitude':28.05495,'longitude':-82.13225,'timezone':'America/New_York','active':'Yes'}
-other=[{'store_id':x,'name':n,'address':'Configure store address','latitude':'','longitude':'','timezone':'America/New_York','active':'Yes'} for x,n in [('INVERNESS','Inverness Store'),('VAPESTORE','Puff Republic / Vape Store')]]
+store={'store_id':'QUICKC','name':'Quick-C SUNOCO — Plant City','address':'','latitude':'','longitude':'','timezone':'America/New_York','active':'Yes'}
+other=[{'store_id':x,'name':n,'address':'Configure store address','latitude':'','longitude':'','timezone':'America/New_York','active':'Yes'} for x,n in [('INVERNESS','Demo Store 2'),('VAPESTORE','Demo Store 3')]]
 signals=[{'store_id':'QUICKC','source':'NWS','kind':'weather_forecast','observed_at':'DEMO ONLY','title':'Illustrative forecast: Cloudy','details':'Example forecast for demonstration only. Not a live weather reading.','source_url':'https://www.weather.gov/'},
 {'store_id':'QUICKC','source':'TomTom','kind':'traffic_flow','observed_at':'DEMO ONLY','title':'Illustrative nearby road speed','value':43,'unit':'km/h','details':'Example traffic snapshot only; not measured.','source_url':'https://www.tomtom.com/traffic-index/'},
 {'store_id':'QUICKC','source':'Google News RSS','kind':'news_mention','observed_at':'DEMO ONLY','title':'Example construction article title','details':'Illustrative placeholder; check FDOT for confirmed roadwork.','source_url':'https://fl511.com/'}]
@@ -53,17 +53,17 @@ cam_checks=[{'id':f'DEMO-{i}','camera_id':i,'assigned_to':'Unassigned',
  'task':'Verify NVR channel and save test event', 'status':'Open'} for i,_,_ in cam_plan]
 data['cameras']={'date':str(today),'hasData':False,'metrics':cam_metrics,'hourly':cam_hourly,
  'cameras':cam_cards,'checks':cam_checks,'cameraCount':14,'monitoredOnline':0,
- 'notes':['This preview now reflects the actual 14-camera NVR inventory, but does NOT connect to CCTV.',
- 'No road-facing or car-wash camera has been confirmed in the supplied inventory.',
+ 'notes':['The camera tiles illustrate a sample layout.',
+ 'Camera coverage depends on the local installation.',
  'All analytics roles are disabled pending real tests and validation.']}
 # WiFi/Network: all values explicitly DEMO ONLY. No live network check occurs in preview.
 data['wifi']={'configured':True,'fresh':True,'last_checked':'DEMO ONLY — not actual connection check',
  'pc_wifi_state':'connected','pc_wifi_ssid':'DEMO-Store-WiFi','pc_wifi_signal':71,'pc_wifi_receive_mbps':144.4,'pc_wifi_transmit_mbps':144.4,
  'router_export_state':'not_configured',
  'devices':[
- {'device_id':'NVR','label':'Example iLink recorder','device_type':'nvr','connection':'wired_or_unknown','ip_address':'192.168.50.10','status':'reachable','method':'tcp_known_target','evidence':'Fictional TCP test success','critical':'Yes'},
+ {'device_id':'NVR','label':'Example iLink recorder','device_type':'nvr','connection':'wired_or_unknown','ip_address':'192.0.2.10','status':'reachable','method':'tcp_known_target','evidence':'Fictional TCP test success','critical':'Yes'},
  {'device_id':'STORE_ROUTER','label':'Example router','device_type':'router','connection':'unknown','ip_address':'—','status':'not_configured','method':'tcp_known_target','evidence':'No router details provided','critical':'Yes'},
- {'device_id':'OBS-EXAMPLE','label':'Unrecognized network neighbor','device_type':'unknown','connection':'unknown','ip_address':'192.168.50.42','status':'observed_in_cache','method':'neighbor_cache','evidence':'Fictional ARP entry, not proof of association','critical':'No'}],
+ {'device_id':'OBS-EXAMPLE','label':'Unrecognized network neighbor','device_type':'unknown','connection':'unknown','ip_address':'192.0.2.42','status':'observed_in_cache','method':'neighbor_cache','evidence':'Fictional ARP entry, not proof of association','critical':'No'}],
  'cameras':[{'camera_id':c['camera_id'],'name':c['name'],'status':'not_configured','details':'Awaiting channel check; demo only'} for c in cam_cards],
  'events':[{'device_id':'NVR','severity':'info','details':'Example restored connection after a failed check','occurred_at':'DEMO ONLY'}],
  'total_devices':3,'reachable_devices':1,'suspected_offline':0,'verified_streams':0}
