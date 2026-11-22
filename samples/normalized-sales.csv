@@ -1,0 +1,3 @@
+date,store_id,inside_sales,customers,transactions,fuel_gallons,fuel_sales,lottery_sales,car_wash_sales,notes
+2026-11-15,QUICKC,3850.25,239,260,1950.4,5250.65,615.00,80.00,EXAMPLE DATA ONLY
+2026-11-16,QUICKC,4201.15,254,281,2071.2,5551.19,702.00,110.00,EXAMPLE DATA ONLY

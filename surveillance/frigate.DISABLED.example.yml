@@ -1,0 +1,175 @@
+# OM AI — 14 proposed channels; all DISABLED until RTSP URLs and zones verified.
+# Do not publish RTSP credentials or this completed config to public GitHub.
+mqtt:
+  host: MQTT_BROKER_PRIVATE_HOST
+  user: MQTT_USER_REPLACE
+  password: MQTT_PASSWORD_REPLACE
+cameras:
+  CAM01:
+    enabled: false
+    # SIDE VIEW — Verify driveway/road visibility first. No vehicle counting until a proper entry line is configured.
+    ffmpeg:
+      inputs:
+        - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
+          roles: [detect]
+    objects:
+      track: [car, truck, motorcycle]
+    detect:
+      enabled: true
+
+  CAM02:
+    enabled: false
+    # KITCHEN — Check kitchen access and incidents; do not infer food safety from video alone.
+    ffmpeg:
+      inputs:
+        - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
+          roles: [detect]
+    objects:
+      track: [person]
+    detect:
+      enabled: true
+
+  CAM03:
+    enabled: false
+    # FRONT DOOR OUTSIDE — Complete and save native NVR people line-crossing rule; verify crossings and direction.
+    ffmpeg:
+      inputs:
+        - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
+          roles: [detect]
+    objects:
+      track: [person]
+    detect:
+      enabled: true
+
+  CAM04:
+    enabled: false
+    # THIRD AISLE — Review aisle traffic only after an agreed zone and accuracy test.
+    ffmpeg:
+      inputs:
+        - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
+          roles: [detect]
+    objects:
+      track: [person]
+    detect:
+      enabled: true
+
+  CAM05:
+    enabled: false
+    # REGISTER OUTSIDE — Verify whether this view covers queue and cashier zones.
+    ffmpeg:
+      inputs:
+        - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
+          roles: [detect]
+    objects:
+      track: [person]
+    detect:
+      enabled: true
+
+  CAM06:
+    enabled: false
+    # PUMP SIDE VIEW — Verify which pumps are visible and test vehicle dwell vs POS transactions.
+    ffmpeg:
+      inputs:
+        - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
+          roles: [detect]
+    objects:
+      track: [car, truck, motorcycle]
+    detect:
+      enabled: true
+
+  CAM07:
+    enabled: false
+    # SECOND AISLE — Review customer flow; avoid identifying individuals.
+    ffmpeg:
+      inputs:
+        - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
+          roles: [detect]
+    objects:
+      track: [person]
+    detect:
+      enabled: true
+
+  CAM08:
+    enabled: false
+    # REGISTER TOP — Potential independent customer/staff counter zones; camera angle unverified.
+    ffmpeg:
+      inputs:
+        - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
+          roles: [detect]
+    objects:
+      track: [person]
+    detect:
+      enabled: true
+
+  CAM09:
+    enabled: false
+    # INSIDE COOLER — Monitor access/activity; cooler temperature requires a sensor.
+    ffmpeg:
+      inputs:
+        - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
+          roles: [detect]
+    objects:
+      track: [person]
+    detect:
+      enabled: true
+
+  CAM10:
+    enabled: false
+    # FIRST AND SECOND AILE — Review traffic and shelf observations; no automatic theft claims.
+    ffmpeg:
+      inputs:
+        - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
+          roles: [detect]
+    objects:
+      track: [person]
+    detect:
+      enabled: true
+
+  CAM11:
+    enabled: false
+    # REGISTER — Potential 25-second queue/staff-assistance alert after zone calibration.
+    ffmpeg:
+      inputs:
+        - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
+          roles: [detect]
+    objects:
+      track: [person]
+    detect:
+      enabled: true
+
+  CAM12:
+    enabled: false
+    # CHIPS AISLE — Review aisle movement and restocking.
+    ffmpeg:
+      inputs:
+        - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
+          roles: [detect]
+    objects:
+      track: [person]
+    detect:
+      enabled: true
+
+  CAM13:
+    enabled: false
+    # BEER COOLER — Review access and restocking; no automated age inference.
+    ffmpeg:
+      inputs:
+        - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
+          roles: [detect]
+    objects:
+      track: [person]
+    detect:
+      enabled: true
+
+  CAM14:
+    enabled: false
+    # FRONT DOOR INSIDE — Cross-check entry events without double-counting the outside door camera.
+    ffmpeg:
+      inputs:
+        - path: rtsp://REPLACE_USER:REPLACE_PASS@REPLACE_CAMERA_IP/REPLACE_PATH
+          roles: [detect]
+    objects:
+      track: [person]
+    detect:
+      enabled: true
+

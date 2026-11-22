@@ -1,0 +1,152 @@
+{
+  "store_id": "QUICKC",
+  "interval_seconds": 300,
+  "allowed_subnets": [
+    "192.168.50.0/24"
+  ],
+  "router_clients_csv": "",
+  "router_export_max_age_minutes": 15,
+  "devices": [
+    {
+      "id": "NVR",
+      "name": "iLink iSNVR32P-4K3 recorder",
+      "type": "nvr",
+      "connection": "wired_or_unknown",
+      "host": "192.168.50.10",
+      "tcp_port": 81,
+      "critical": true
+    },
+    {
+      "id": "STORE_ROUTER",
+      "name": "Store network router",
+      "type": "router",
+      "connection": "wired_or_unknown",
+      "host": "",
+      "tcp_port": 0,
+      "critical": true
+    },
+    {
+      "id": "STORE_PC",
+      "name": "GMKtec surveillance PC",
+      "type": "computer",
+      "connection": "wired_or_wifi",
+      "host": "",
+      "tcp_port": 0,
+      "critical": true
+    }
+  ],
+  "cameras": [
+    {
+      "id": "CAM01",
+      "name": "SIDE VIEW",
+      "nvr_list_position": 1,
+      "channel_mapping_verified": true,
+      "probe_enabled": false,
+      "rtsp_url_env": "OM_WIFI_RTSP_CAM01"
+    },
+    {
+      "id": "CAM02",
+      "name": "KITCHEN",
+      "nvr_list_position": 2,
+      "channel_mapping_verified": false,
+      "probe_enabled": false,
+      "rtsp_url_env": "OM_WIFI_RTSP_CAM02"
+    },
+    {
+      "id": "CAM03",
+      "name": "FRONT DOOR OUTSIDE",
+      "nvr_list_position": 3,
+      "channel_mapping_verified": false,
+      "probe_enabled": false,
+      "rtsp_url_env": "OM_WIFI_RTSP_CAM03"
+    },
+    {
+      "id": "CAM04",
+      "name": "THIRD AISLE",
+      "nvr_list_position": 4,
+      "channel_mapping_verified": false,
+      "probe_enabled": false,
+      "rtsp_url_env": "OM_WIFI_RTSP_CAM04"
+    },
+    {
+      "id": "CAM05",
+      "name": "REGISTER OUTSIDE",
+      "nvr_list_position": 5,
+      "channel_mapping_verified": false,
+      "probe_enabled": false,
+      "rtsp_url_env": "OM_WIFI_RTSP_CAM05"
+    },
+    {
+      "id": "CAM06",
+      "name": "PUMP SIDE VIEW",
+      "nvr_list_position": 6,
+      "channel_mapping_verified": false,
+      "probe_enabled": false,
+      "rtsp_url_env": "OM_WIFI_RTSP_CAM06"
+    },
+    {
+      "id": "CAM07",
+      "name": "SECOND AISLE",
+      "nvr_list_position": 7,
+      "channel_mapping_verified": false,
+      "probe_enabled": false,
+      "rtsp_url_env": "OM_WIFI_RTSP_CAM07"
+    },
+    {
+      "id": "CAM08",
+      "name": "REGISTER TOP",
+      "nvr_list_position": 8,
+      "channel_mapping_verified": false,
+      "probe_enabled": false,
+      "rtsp_url_env": "OM_WIFI_RTSP_CAM08"
+    },
+    {
+      "id": "CAM09",
+      "name": "INSIDE COOLER",
+      "nvr_list_position": 9,
+      "channel_mapping_verified": false,
+      "probe_enabled": false,
+      "rtsp_url_env": "OM_WIFI_RTSP_CAM09"
+    },
+    {
+      "id": "CAM10",
+      "name": "FIRST AND SECOND AILE",
+      "nvr_list_position": 10,
+      "channel_mapping_verified": false,
+      "probe_enabled": false,
+      "rtsp_url_env": "OM_WIFI_RTSP_CAM10"
+    },
+    {
+      "id": "CAM11",
+      "name": "REGISTER",
+      "nvr_list_position": 11,
+      "channel_mapping_verified": false,
+      "probe_enabled": false,
+      "rtsp_url_env": "OM_WIFI_RTSP_CAM11"
+    },
+    {
+      "id": "CAM12",
+      "name": "CHIPS AISLE",
+      "nvr_list_position": 12,
+      "channel_mapping_verified": false,
+      "probe_enabled": false,
+      "rtsp_url_env": "OM_WIFI_RTSP_CAM12"
+    },
+    {
+      "id": "CAM13",
+      "name": "BEER COOLER",
+      "nvr_list_position": 13,
+      "channel_mapping_verified": false,
+      "probe_enabled": false,
+      "rtsp_url_env": "OM_WIFI_RTSP_CAM13"
+    },
+    {
+      "id": "CAM14",
+      "name": "FRONT DOOR INSIDE",
+      "nvr_list_position": 14,
+      "channel_mapping_verified": false,
+      "probe_enabled": false,
+      "rtsp_url_env": "OM_WIFI_RTSP_CAM14"
+    }
+  ]
+}

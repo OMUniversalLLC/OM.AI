@@ -1,0 +1,24 @@
+{
+  "store_id": "QUICKC",
+  "device_id": "STORE-PC-01",
+  "disk_path": "C:\\",
+  "protected_processes": ["Surveillance_client.exe", "NVMS Lite.exe", "Agent.exe", "OM_Agent.exe"],
+  "thresholds": {
+    "ram_warning_pct": 85,
+    "cpu_warning_pct": 85,
+    "cpu_temp_warning_c": 85,
+    "disk_free_warning_gb": 20
+  },
+  "jobs": [
+    {"job_id":"gasbuddy_daily", "name":"GasBuddy local price verification", "provider":"GasBuddy", "owner":"Fuel team", "max_age_hours":27, "evidence_required":true},
+    {"job_id":"aaa_daily", "name":"AAA area average price verification", "provider":"AAA", "owner":"Fuel team", "max_age_hours":27, "evidence_required":true},
+    {"job_id":"mostedge_daily", "name":"MostEdge authorized store report", "provider":"MostEdge", "owner":"Back office", "max_age_hours":27, "evidence_required":true},
+    {"job_id":"nvr_record_check", "name":"NVR playback and recording check", "provider":"Store IT", "owner":"Surveillance lead", "max_age_hours":27, "evidence_required":true},
+    {"job_id":"camera_analytics", "name":"Camera analytics heartbeat", "provider":"Store PC", "owner":"Store IT", "max_age_hours":1, "evidence_required":false},
+    {"job_id":"wifi_health", "name":"Wi-Fi device status heartbeat", "provider":"Store PC", "owner":"Store IT", "max_age_hours":1, "evidence_required":false},
+    {"job_id":"weather_refresh", "name":"NWS weather & alert ingestion", "provider":"NWS", "owner":"OM Radar", "max_age_hours":3, "evidence_required":false},
+    {"job_id":"news_review", "name":"News impact verification", "provider":"News feeds", "owner":"Management", "max_age_hours":27, "evidence_required":true},
+    {"job_id":"gemini_report", "name":"Optional Gemini report quality check", "provider":"Gemini API", "owner":"Back office", "max_age_hours":27, "evidence_required":true},
+    {"job_id":"openai_report", "name":"Optional OpenAI API report quality check", "provider":"OpenAI API", "owner":"Back office", "max_age_hours":27, "evidence_required":true}
+  ]
+}

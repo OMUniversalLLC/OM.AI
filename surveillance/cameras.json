@@ -1,0 +1,302 @@
+{
+  "store_id": "QUICKC",
+  "timezone": "America/New_York",
+  "nvr": {
+    "marketed_vendor": "iLink Professionals",
+    "model": "iSNVR32P-4K3",
+    "firmware": "<verify locally before deploying>",
+    "recording_channels": 32,
+    "built_in_poe_ports_listed": 16,
+    "native_ai_enabled": true,
+    "native_ai_verified_event": false,
+    "rtsp_working_for_channels": [
+      1,
+      2
+    ],
+    "rtsp_url_template": "rtsp://<LOCAL_NVR_IP>:554/chID={channel}&streamType=sub",
+    "remote_exposure_allowed": false
+  },
+  "local_pc": {
+    "model": "GMKtec NucBox M7 Ultra",
+    "os": "Windows 11 Pro",
+    "cpu": "AMD Ryzen 7 PRO 6850U",
+    "ram_installed_gb": 16,
+    "gpu": "Integrated AMD Radeon",
+    "all_camera_ai_benchmarked": false
+  },
+  "road_camera_identified": false,
+  "carwash_camera_identified": false,
+  "note": "Imported actual NVR camera list. All analytics disabled by default; camera name and position do not prove physical viewing angle, person/vehicle counting capability or RTSP channel mapping.",
+  "cameras": [
+    {
+      "id": "CAM01",
+      "name": "SIDE VIEW",
+      "nvr_list_position": 1,
+      "nvr_channel_number_assumed": 1,
+      "channel_name_mapping_verified": true,
+      "rtsp_playback_tested": true,
+      "enabled": false,
+      "role": "activity_only",
+      "proposed_role": "vehicle_entry_candidate",
+      "zone": "side_view",
+      "objects": [
+        "car",
+        "truck",
+        "motorcycle"
+      ],
+      "minimum_dwell_seconds": 0,
+      "observer": "Unassigned",
+      "task": "Verify driveway/road visibility first. No vehicle counting until a proper entry line is configured.",
+      "setup_status": "requires_visual_and_event_validation"
+    },
+    {
+      "id": "CAM02",
+      "name": "KITCHEN",
+      "nvr_list_position": 2,
+      "nvr_channel_number_assumed": 2,
+      "channel_name_mapping_verified": false,
+      "rtsp_playback_tested": true,
+      "enabled": false,
+      "role": "activity_only",
+      "proposed_role": "kitchen_operations",
+      "zone": "kitchen",
+      "objects": [
+        "person"
+      ],
+      "minimum_dwell_seconds": 0,
+      "observer": "Unassigned",
+      "task": "Check kitchen access and incidents; do not infer food safety from video alone.",
+      "setup_status": "requires_visual_and_event_validation"
+    },
+    {
+      "id": "CAM03",
+      "name": "FRONT DOOR OUTSIDE",
+      "nvr_list_position": 3,
+      "nvr_channel_number_assumed": 3,
+      "channel_name_mapping_verified": false,
+      "rtsp_playback_tested": false,
+      "enabled": false,
+      "role": "activity_only",
+      "proposed_role": "store_door_entry_candidate",
+      "zone": "front_door_outside",
+      "objects": [
+        "person"
+      ],
+      "minimum_dwell_seconds": 0,
+      "observer": "Unassigned",
+      "task": "Complete and save native NVR people line-crossing rule; verify crossings and direction.",
+      "setup_status": "requires_visual_and_event_validation"
+    },
+    {
+      "id": "CAM04",
+      "name": "THIRD AISLE",
+      "nvr_list_position": 4,
+      "nvr_channel_number_assumed": 4,
+      "channel_name_mapping_verified": false,
+      "rtsp_playback_tested": false,
+      "enabled": false,
+      "role": "activity_only",
+      "proposed_role": "aisle_activity",
+      "zone": "third_aisle",
+      "objects": [
+        "person"
+      ],
+      "minimum_dwell_seconds": 0,
+      "observer": "Unassigned",
+      "task": "Review aisle traffic only after an agreed zone and accuracy test.",
+      "setup_status": "requires_visual_and_event_validation"
+    },
+    {
+      "id": "CAM05",
+      "name": "REGISTER OUTSIDE",
+      "nvr_list_position": 5,
+      "nvr_channel_number_assumed": 5,
+      "channel_name_mapping_verified": false,
+      "rtsp_playback_tested": false,
+      "enabled": false,
+      "role": "activity_only",
+      "proposed_role": "counter_view_candidate",
+      "zone": "register_outside",
+      "objects": [
+        "person"
+      ],
+      "minimum_dwell_seconds": 0,
+      "observer": "Unassigned",
+      "task": "Verify whether this view covers queue and cashier zones.",
+      "setup_status": "requires_visual_and_event_validation"
+    },
+    {
+      "id": "CAM06",
+      "name": "PUMP SIDE VIEW",
+      "nvr_list_position": 6,
+      "nvr_channel_number_assumed": 6,
+      "channel_name_mapping_verified": false,
+      "rtsp_playback_tested": false,
+      "enabled": false,
+      "role": "activity_only",
+      "proposed_role": "pump_dwell_candidate",
+      "zone": "pump_side_view",
+      "objects": [
+        "car",
+        "truck",
+        "motorcycle"
+      ],
+      "minimum_dwell_seconds": 30,
+      "observer": "Unassigned",
+      "task": "Verify which pumps are visible and test vehicle dwell vs POS transactions.",
+      "setup_status": "requires_visual_and_event_validation"
+    },
+    {
+      "id": "CAM07",
+      "name": "SECOND AISLE",
+      "nvr_list_position": 7,
+      "nvr_channel_number_assumed": 7,
+      "channel_name_mapping_verified": false,
+      "rtsp_playback_tested": false,
+      "enabled": false,
+      "role": "activity_only",
+      "proposed_role": "aisle_activity",
+      "zone": "second_aisle",
+      "objects": [
+        "person"
+      ],
+      "minimum_dwell_seconds": 0,
+      "observer": "Unassigned",
+      "task": "Review customer flow; avoid identifying individuals.",
+      "setup_status": "requires_visual_and_event_validation"
+    },
+    {
+      "id": "CAM08",
+      "name": "REGISTER TOP",
+      "nvr_list_position": 8,
+      "nvr_channel_number_assumed": 8,
+      "channel_name_mapping_verified": false,
+      "rtsp_playback_tested": false,
+      "enabled": false,
+      "role": "activity_only",
+      "proposed_role": "counter_occupancy_candidate",
+      "zone": "register_top",
+      "objects": [
+        "person"
+      ],
+      "minimum_dwell_seconds": 0,
+      "observer": "Unassigned",
+      "task": "Potential independent customer/staff counter zones; camera angle unverified.",
+      "setup_status": "requires_visual_and_event_validation"
+    },
+    {
+      "id": "CAM09",
+      "name": "INSIDE COOLER",
+      "nvr_list_position": 9,
+      "nvr_channel_number_assumed": 9,
+      "channel_name_mapping_verified": false,
+      "rtsp_playback_tested": false,
+      "enabled": false,
+      "role": "activity_only",
+      "proposed_role": "cooler_operations",
+      "zone": "inside_cooler",
+      "objects": [
+        "person"
+      ],
+      "minimum_dwell_seconds": 0,
+      "observer": "Unassigned",
+      "task": "Monitor access/activity; cooler temperature requires a sensor.",
+      "setup_status": "requires_visual_and_event_validation"
+    },
+    {
+      "id": "CAM10",
+      "name": "FIRST AND SECOND AILE",
+      "nvr_list_position": 10,
+      "nvr_channel_number_assumed": 10,
+      "channel_name_mapping_verified": false,
+      "rtsp_playback_tested": false,
+      "enabled": false,
+      "role": "activity_only",
+      "proposed_role": "aisle_activity",
+      "zone": "first_second_aisle",
+      "objects": [
+        "person"
+      ],
+      "minimum_dwell_seconds": 0,
+      "observer": "Unassigned",
+      "task": "Review traffic and shelf observations; no automatic theft claims.",
+      "setup_status": "requires_visual_and_event_validation"
+    },
+    {
+      "id": "CAM11",
+      "name": "REGISTER",
+      "nvr_list_position": 11,
+      "nvr_channel_number_assumed": 11,
+      "channel_name_mapping_verified": false,
+      "rtsp_playback_tested": false,
+      "enabled": false,
+      "role": "activity_only",
+      "proposed_role": "counter_occupancy_candidate",
+      "zone": "register",
+      "objects": [
+        "person"
+      ],
+      "minimum_dwell_seconds": 0,
+      "observer": "Unassigned",
+      "task": "Potential 25-second queue/staff-assistance alert after zone calibration.",
+      "setup_status": "requires_visual_and_event_validation"
+    },
+    {
+      "id": "CAM12",
+      "name": "CHIPS AISLE",
+      "nvr_list_position": 12,
+      "nvr_channel_number_assumed": 12,
+      "channel_name_mapping_verified": false,
+      "rtsp_playback_tested": false,
+      "enabled": false,
+      "role": "activity_only",
+      "proposed_role": "aisle_activity",
+      "zone": "chips_aisle",
+      "objects": [
+        "person"
+      ],
+      "minimum_dwell_seconds": 0,
+      "observer": "Unassigned",
+      "task": "Review aisle movement and restocking.",
+      "setup_status": "requires_visual_and_event_validation"
+    },
+    {
+      "id": "CAM13",
+      "name": "BEER COOLER",
+      "nvr_list_position": 13,
+      "nvr_channel_number_assumed": 13,
+      "channel_name_mapping_verified": false,
+      "rtsp_playback_tested": false,
+      "enabled": false,
+      "role": "activity_only",
+      "proposed_role": "cooler_operations",
+      "zone": "beer_cooler",
+      "objects": [
+        "person"
+      ],
+      "minimum_dwell_seconds": 0,
+      "observer": "Unassigned",
+      "task": "Review access and restocking; no automated age inference.",
+      "setup_status": "requires_visual_and_event_validation"
+    },
+    {
+      "id": "CAM14",
+      "name": "FRONT DOOR INSIDE",
+      "nvr_list_position": 14,
+      "nvr_channel_number_assumed": 14,
+      "channel_name_mapping_verified": false,
+      "rtsp_playback_tested": false,
+      "enabled": false,
+      "role": "activity_only",
+      "proposed_role": "door_count_crosscheck",
+      "zone": "front_door_inside",
+      "objects": [
+        "person"
+      ],
+      "minimum_dwell_seconds": 0,
+      "observer": "Unassigned",
+      "task": "Cross-check entry events without double-counting the outside door camera.",
+      "setup_status": "requires_visual_and_event_validation"
+    }
+  ]
+}
