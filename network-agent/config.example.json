@@ -9,7 +9,7 @@
   "devices": [
     {
       "id": "NVR",
-      "name": "iLink iSNVR32P-4K3 recorder",
+      "name": "Example recorder",
       "type": "nvr",
       "connection": "wired_or_unknown",
       "host": "192.168.50.10",
@@ -27,7 +27,7 @@
     },
     {
       "id": "STORE_PC",
-      "name": "GMKtec surveillance PC",
+      "name": "Example monitoring PC",
       "type": "computer",
       "connection": "wired_or_wifi",
       "host": "",
@@ -38,7 +38,7 @@
   "cameras": [
     {
       "id": "CAM01",
-      "name": "SIDE VIEW",
+      "name": "CAM01",
       "nvr_list_position": 1,
       "channel_mapping_verified": true,
       "probe_enabled": false,
@@ -46,7 +46,7 @@
     },
     {
       "id": "CAM02",
-      "name": "KITCHEN",
+      "name": "CAM02",
       "nvr_list_position": 2,
       "channel_mapping_verified": false,
       "probe_enabled": false,
@@ -54,7 +54,7 @@
     },
     {
       "id": "CAM03",
-      "name": "FRONT DOOR OUTSIDE",
+      "name": "CAM03",
       "nvr_list_position": 3,
       "channel_mapping_verified": false,
       "probe_enabled": false,
@@ -62,7 +62,7 @@
     },
     {
       "id": "CAM04",
-      "name": "THIRD AISLE",
+      "name": "CAM04",
       "nvr_list_position": 4,
       "channel_mapping_verified": false,
       "probe_enabled": false,
@@ -70,7 +70,7 @@
     },
     {
       "id": "CAM05",
-      "name": "REGISTER OUTSIDE",
+      "name": "CAM05",
       "nvr_list_position": 5,
       "channel_mapping_verified": false,
       "probe_enabled": false,
@@ -78,7 +78,7 @@
     },
     {
       "id": "CAM06",
-      "name": "PUMP SIDE VIEW",
+      "name": "CAM06",
       "nvr_list_position": 6,
       "channel_mapping_verified": false,
       "probe_enabled": false,
@@ -86,7 +86,7 @@
     },
     {
       "id": "CAM07",
-      "name": "SECOND AISLE",
+      "name": "CAM07",
       "nvr_list_position": 7,
       "channel_mapping_verified": false,
       "probe_enabled": false,
@@ -94,7 +94,7 @@
     },
     {
       "id": "CAM08",
-      "name": "REGISTER TOP",
+      "name": "CAM08",
       "nvr_list_position": 8,
       "channel_mapping_verified": false,
       "probe_enabled": false,
@@ -102,7 +102,7 @@
     },
     {
       "id": "CAM09",
-      "name": "INSIDE COOLER",
+      "name": "CAM09",
       "nvr_list_position": 9,
       "channel_mapping_verified": false,
       "probe_enabled": false,
@@ -110,7 +110,7 @@
     },
     {
       "id": "CAM10",
-      "name": "FIRST AND SECOND AILE",
+      "name": "CAM10",
       "nvr_list_position": 10,
       "channel_mapping_verified": false,
       "probe_enabled": false,
@@ -118,7 +118,7 @@
     },
     {
       "id": "CAM11",
-      "name": "REGISTER",
+      "name": "CAM11",
       "nvr_list_position": 11,
       "channel_mapping_verified": false,
       "probe_enabled": false,
@@ -126,7 +126,7 @@
     },
     {
       "id": "CAM12",
-      "name": "CHIPS AISLE",
+      "name": "CAM12",
       "nvr_list_position": 12,
       "channel_mapping_verified": false,
       "probe_enabled": false,
@@ -134,7 +134,7 @@
     },
     {
       "id": "CAM13",
-      "name": "BEER COOLER",
+      "name": "CAM13",
       "nvr_list_position": 13,
       "channel_mapping_verified": false,
       "probe_enabled": false,
@@ -142,7 +142,7 @@
     },
     {
       "id": "CAM14",
-      "name": "FRONT DOOR INSIDE",
+      "name": "CAM14",
       "nvr_list_position": 14,
       "channel_mapping_verified": false,
       "probe_enabled": false,

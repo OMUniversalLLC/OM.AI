@@ -7,13 +7,13 @@ import datetime as dt
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
-from analytics import AnalyticsStore, classify_frigate
+from analytics import AnalyticsStore, classify_frigate, load_camera_config
 from sys import path as sys_path
 sys_path.insert(0, str(Path(__file__).resolve().parents[1] / 'edge-agent'))
 from counter_alert import CounterMonitor, speak_homeassistant
 
 ROOT = Path(__file__).resolve().parent
-CONFIG = json.loads((ROOT / 'cameras.json').read_text())
+CONFIG = load_camera_config()
 STORE = AnalyticsStore(os.environ.get('OM_SURVEILLANCE_DB', str(ROOT / 'surveillance.sqlite3')), CONFIG)
 COUNTER = CounterMonitor(wait_seconds=float(os.environ.get('OM_WAIT_SECONDS','25')),
                          cooldown_seconds=float(os.environ.get('OM_ALERT_COOLDOWN','120')))

@@ -24,7 +24,7 @@ class TestOmWifiMonitor(TestCase):
             first=m.monitored_devices(cfg)[0];self.assertEqual(first['status'],'no_response')
             second=m.monitored_devices(cfg,{'NVR':first})[0];self.assertEqual(second['status'],'suspected_offline')
     def test_no_configuration_does_not_claim_camera_online(self):
-        c={'id':'CAM03','name':'FRONT DOOR OUTSIDE','channel_mapping_verified':False,'probe_enabled':False}
+        c={'id':'CAM03','name':'Camera 03','channel_mapping_verified':False,'probe_enabled':False}
         self.assertEqual(m.verify_camera_stream(c)['status'],'not_configured')
     def test_public_address_not_probed(self):
         self.assertEqual(m.tcp_probe('8.8.8.8',53)['reason'],'non_private_address_refused')

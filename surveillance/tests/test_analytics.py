@@ -19,7 +19,7 @@ class AnalyticsTests(unittest.TestCase):
 
     def test_14_configured_cameras_and_no_assumed_online(self):
         self.assertEqual(len(CONFIG['cameras']),14)
-        self.assertEqual(CONFIG['cameras'][2]['name'],'FRONT DOOR OUTSIDE')
+        self.assertEqual(CONFIG['cameras'][2]['name'],'Camera 03')
         self.assertTrue(all(not c['enabled'] for c in CONFIG['cameras']))
         self.assertEqual(self.store.health()[0]['status'],'not_connected')
         self.store.heartbeat('CAM01')
@@ -38,7 +38,7 @@ class AnalyticsTests(unittest.TestCase):
         self.store.camera_by_id['CAM06'].update({'enabled':True,'role':'pump_dwell'})
         start=self.now().timestamp()
         obj={'type':'end','after':{'camera':'CAM06','label':'car','id':'xyz',
-             'start_time':start-8,'end_time':start,'entered_zones':['pump_side_view'],'score':0.8}}
+             'start_time':start-8,'end_time':start,'entered_zones':['zone_06'],'score':0.8}}
         self.assertIsNone(classify_frigate(obj,self.store.camera_by_id))
         obj['after']['start_time']=start-45
         event=classify_frigate(obj,self.store.camera_by_id)
@@ -52,7 +52,7 @@ class AnalyticsTests(unittest.TestCase):
         ev={'type':'end','after':{'camera':'CAM01','label':'car','id':'xyz',
          'start_time':start-5,'end_time':start,'entered_zones':['sidewalk']}}
         self.assertIsNone(classify_frigate(ev,self.store.camera_by_id))
-        ev['after']['entered_zones']=['side_view'];ev['type']='update'
+        ev['after']['entered_zones']=[self.store.camera_by_id['CAM01']['zone']];ev['type']='update'
         self.assertIsNone(classify_frigate(ev,self.store.camera_by_id))
         ev['type']='end'
         self.assertEqual(classify_frigate(ev,self.store.camera_by_id)['metric'],'vehicle_entry')

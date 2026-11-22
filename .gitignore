@@ -12,6 +12,8 @@ surveillance/*.sqlite3-*
 surveillance/*.log
 surveillance/.env
 surveillance/private-config*
+surveillance/cameras.local.json
+__pycache__/
 
 # OM WiFi Intelligence — local device/network secrets
 network-agent/config.json

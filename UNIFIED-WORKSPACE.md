@@ -1,26 +1,18 @@
-# OM AI — Unified source workspace
+# OM AI source workspace
 
-This is the canonical GitHub repository for OM AI source code.
+- `apps/operations-dashboard` contains the React operations reporting dashboard and its Pages build.
+- `preview/dashboard-export/index.html` is a standalone, sample-data website.
+- `vehicle-traffic` contains the Windows monitor, calibration tools, browser dashboard, and Sheets publisher.
+- `apps-script`, `surveillance`, `edge-agent`, `network-agent`, and `pc-agent` contain the deployment components.
 
-## Applications
-- `apps/operations-dashboard` — imported React operations reporting dashboard. Its independent Google sign-in integration and hardcoded Pages path are legacy code, **not** Supabase-integrated.
-- `apps-script` — existing private OM AI Google Apps Script prototype.
-- `surveillance`, `edge-agent` — proposed NVR/edge analytics integration.
-- `network-agent`, `pc-agent` — store Windows network and computer-health agents.
-- `preview` — illustrative user interface (not live operational readings).
+## Run the operations dashboard locally
 
-### Import status
-The React dashboard source was copied from `OMUniversalLLC/om-universal-operations-dashboard` into `apps/operations-dashboard`. The original repo has **not** been changed. We intentionally excluded the published sales snapshot, prebuilt assets, old workflows and redundant README to avoid redistributing operational data or accidentally enabling scheduled login automations. The imported app has an **empty, safe placeholder** instead.
-
-This import is a source-code consolidation, **not** a deployed single-sign-on or integrated data pipeline. See `docs/UNIFIED-SECURITY-AND-DEPLOYMENT.md` before enabling live use.
-
-## Run imported dashboard (developer only)
 ```bash
 cd apps/operations-dashboard
 pnpm install
 pnpm run dev:pages
 ```
-For this unified repo, the legacy GitHub Pages base path and auth endpoints must be migrated before deployment.
 
-## Data and secrets
-Never put passwords, authentication tokens, private camera addresses/footage, real store reports or database service-role keys in GitHub. Supabase will authenticate **OM AI human users only**; separate backend/edge service vaults store external credentials. Do not store external account passwords in Supabase Auth.
+## Set up a private deployment
+
+Use approved local or private services for the operational dashboard and integrations. Review [deployment guidance](docs/UNIFIED-SECURITY-AND-DEPLOYMENT.md) before enabling real data. Store the site profile, camera inventory, and account credentials in restricted storage. For local surveillance, the agent loads `surveillance/cameras.local.json` if present. Apps Script owners can configure `OM_PRIVATE_CAMERA_PLAN` as a private Script Property for seeding or explicitly aligning camera names.

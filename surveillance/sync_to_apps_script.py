@@ -5,10 +5,10 @@ Run from local cron/scheduler about every 5 minutes after both endpoints are con
 import os, json, base64, hmac, hashlib, datetime as dt
 from pathlib import Path
 from urllib.request import Request,urlopen
-from analytics import AnalyticsStore
+from analytics import AnalyticsStore, load_camera_config
 
 ROOT=Path(__file__).resolve().parent
-CONFIG=json.loads((ROOT/'cameras.json').read_text())
+CONFIG=load_camera_config()
 
 def sign_payload(payload: dict, secret: str) -> dict:
     raw=json.dumps(payload,separators=(',', ':'),ensure_ascii=False).encode('utf-8')

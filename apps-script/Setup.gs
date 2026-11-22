@@ -20,7 +20,7 @@ function setupOmAi() {
   });
   if (omRead_('Users').length===0) omAppend_('Users',{email:omActor_(),name:'Owner',role:'Admin',store_ids:'QUICKC,INVERNESS,VAPESTORE',active:'Yes'});
   if (omRead_('Stores').length===0) {
-    omAppend_('Stores',{store_id:'QUICKC',name:'Quick-C SUNOCO — Plant City',address:'3801 Paul Buchman Hwy, Plant City, FL 33565, USA',latitude:28.05495,longitude:-82.13225,timezone:'America/New_York',active:'Yes'});
+    omAppend_('Stores',{store_id:'QUICKC',name:'Quick-C SUNOCO — Plant City',address:'',latitude:'',longitude:'',timezone:'America/New_York',active:'Yes'});
     omAppend_('Stores',{store_id:'INVERNESS',name:'Inverness Store',address:'Set your exact address',latitude:'',longitude:'',timezone:'America/New_York',active:'Yes'});
     omAppend_('Stores',{store_id:'VAPESTORE',name:'Puff Republic / Vape Store',address:'Set your exact address',latitude:'',longitude:'',timezone:'America/New_York',active:'Yes'});
   }
