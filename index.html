@@ -17,23 +17,30 @@
     nav { margin:1.25rem 0; }
     a { color:#174f90; font-weight:650; }
     a:focus-visible { outline:3px solid #2369bd; outline-offset:3px; }
-    nav a,.actions a { display:flex; align-items:center; min-height:3rem; padding:.65rem .85rem; border:1px solid #cbd7e6; border-radius:.55rem; background:white; text-decoration:none; }
+    nav a { display:flex; align-items:center; min-height:3rem; padding:.65rem .85rem; border:1px solid #cbd7e6; border-radius:.55rem; background:white; text-decoration:none; }
     nav a { justify-content:space-between; gap:.5rem; }
     nav a[aria-current="location"] { background:#174476; color:white; border-color:#174476; }
-    nav a:not([aria-current]):hover,.actions a:hover { background:#e8f0fa; }
+    nav a:not([aria-current]):hover,summary:hover { background:#e8f0fa; }
     .module { background:white; border:1px solid #dbe4ef; border-radius:.85rem; padding:clamp(1rem,4vw,1.75rem); margin-bottom:.9rem; scroll-margin-top:.75rem; }
     .items { margin:1rem 0; }
-    article { padding:.9rem; background:#f5f8fc; border-radius:.6rem; }
-    article p { color:#45566e; }
-    .actions { display:flex; flex-wrap:wrap; gap:.6rem; }
-    footer { margin-top:1.2rem; }
+    details { min-width:0; background:#f5f8fc; border-radius:.6rem; border:1px solid #dbe4ef; }
+    summary { padding:.8rem; cursor:pointer; color:#174f90; font-weight:650; border-radius:.6rem; }
+    summary:focus-visible,button:focus-visible,input:focus-visible { outline:3px solid #2369bd; outline-offset:3px; }
+    .detail { padding:0 .8rem .85rem; color:#45566e; }
+    .detail dl { margin:.65rem 0 0; }
+    .detail dl div { display:flex; justify-content:space-between; gap:.55rem; padding:.4rem 0; border-bottom:1px solid #e0e8f2; }
+    .detail dd { margin:0; text-align:right; font-weight:650; }
+    .checklist { border:0; padding:0; margin:.65rem 0 0; }
+    .checklist label { display:flex; align-items:flex-start; gap:.5rem; padding:.3rem 0; }
+    .checklist input { width:1rem; height:1rem; accent-color:#174476; flex-shrink:0; }
+    button { font:inherit; padding:.4rem .75rem; border:1px solid #cbd7e6; border-radius:.45rem; background:white; color:#174f90; cursor:pointer; }
   </style>
 </head>
 <body>
   <main>
     <header>
       <h1>OM AI Operations</h1>
-      <p>Browse the project modules. Live records and monitoring are available through your private deployment.</p>
+      <p>Open a module and expand a report to see what it tracks. Live store data requires the private deployment.</p>
     </header>
     <nav aria-label="Operations modules">
       <a href="#operations">Operations reporting <span aria-hidden="true">&#8594;</span></a>
@@ -44,42 +51,47 @@
     <section class="module" id="operations" aria-labelledby="operations-title">
       <h2 id="operations-title">Operations reporting</h2>
       <div class="items">
-        <article><h3>Sales and costs</h3><p>Review daily sales, fuel, and operating expenses.</p></article>
-        <article><h3>Inventory</h3><p>Check stock levels and items that need reordering.</p></article>
-        <article><h3>Store follow-up</h3><p>Review open tasks and vendor discrepancies.</p></article>
+        <details><summary>Sales and costs</summary><div class="detail"><dl>
+          <div><dt>Daily sales</dt><dd>Unavailable</dd></div><div><dt>Fuel sales</dt><dd>Unavailable</dd></div><div><dt>Operating expenses</dt><dd>Unavailable</dd></div>
+        </dl></div></details>
+        <details><summary>Inventory</summary><div class="detail"><p>Stock levels and reorder alerts appear when an inventory source is connected.</p><dl><div><dt>Inventory source</dt><dd>Not connected</dd></div></dl></div></details>
+        <details><summary>Store follow-up</summary><div class="detail"><p>Check open tasks and vendor discrepancies.</p><p><a href="#tasks">Open Task Review</a></p></div></details>
       </div>
-      <div class="actions"><a href="https://github.com/OMUniversalLLC/OM.AI/tree/main/apps/operations-dashboard">Browse dashboard source</a></div>
     </section>
     <section class="module" id="traffic" aria-labelledby="traffic-title">
       <h2 id="traffic-title">Vehicle traffic</h2>
       <div class="items">
-        <article><h3>Road crossings</h3><p>Review counts at the configured road line.</p></article>
-        <article><h3>Driveway crossings</h3><p>Review vehicles entering and leaving the lot.</p></article>
+        <details><summary>Road crossings</summary><div class="detail"><dl><div><dt>Crossings today</dt><dd>Unavailable</dd></div><div><dt>Camera feed</dt><dd>Not connected</dd></div></dl></div></details>
+        <details><summary>Driveway crossings</summary><div class="detail"><dl><div><dt>Vehicles entered</dt><dd>Unavailable</dd></div><div><dt>Vehicles exited</dt><dd>Unavailable</dd></div></dl></div></details>
       </div>
-      <div class="actions"><a href="https://github.com/OMUniversalLLC/OM.AI/blob/main/vehicle-traffic/SETUP.md">Open Vehicle Traffic setup</a></div>
     </section>
     <section class="module" id="equipment" aria-labelledby="equipment-title">
       <h2 id="equipment-title">Equipment health</h2>
       <div class="items">
-        <article><h3>Cameras</h3><p>Check stream availability and follow up on missing camera reports.</p></article>
-        <article><h3>Store computer</h3><p>Review CPU, memory, and disk status.</p></article>
-        <article><h3>Network</h3><p>Check configured devices and Wi-Fi status.</p></article>
-      </div>
-      <div class="actions">
-        <a href="https://github.com/OMUniversalLLC/OM.AI/tree/main/surveillance">Camera monitor</a>
-        <a href="https://github.com/OMUniversalLLC/OM.AI/tree/main/pc-agent">Computer monitor</a>
-        <a href="https://github.com/OMUniversalLLC/OM.AI/tree/main/network-agent">Network monitor</a>
+        <details><summary>Cameras</summary><div class="detail"><dl><div><dt>Stream availability</dt><dd>Unavailable</dd></div><div><dt>Last camera report</dt><dd>Unavailable</dd></div></dl></div></details>
+        <details><summary>Store computer</summary><div class="detail"><dl><div><dt>CPU and memory</dt><dd>Unavailable</dd></div><div><dt>Disk space</dt><dd>Unavailable</dd></div></dl></div></details>
+        <details><summary>Network</summary><div class="detail"><dl><div><dt>Device status</dt><dd>Unavailable</dd></div><div><dt>Wi-Fi status</dt><dd>Unavailable</dd></div></dl></div></details>
       </div>
     </section>
     <section class="module" id="tasks" aria-labelledby="tasks-title">
       <h2 id="tasks-title">Task review</h2>
       <div class="items">
-        <article><h3>Job status</h3><p>Check the run time and reported result.</p></article>
-        <article><h3>Supporting evidence</h3><p>Compare the result with the original source before recording a decision.</p></article>
+        <details><summary>Job status</summary><div class="detail"><p>Job results appear when the private job monitor is connected.</p><dl><div><dt>Latest run</dt><dd>Unavailable</dd></div></dl></div></details>
+        <details><summary>Supporting evidence</summary><div class="detail">
+          <p>Use this checklist when reviewing a completed job. Your selections are cleared when you reload.</p>
+          <form id="review-checklist">
+            <fieldset class="checklist">
+              <legend>Review checklist</legend>
+              <label><input type="checkbox"> Confirm the job and its run time.</label>
+              <label><input type="checkbox"> Compare the result with the original source.</label>
+              <label><input type="checkbox"> Record the decision in your private dashboard.</label>
+            </fieldset>
+            <p><output id="review-progress" aria-live="polite">0 of 3 checked</output></p>
+            <p><button type="reset">Reset checklist</button></p>
+          </form>
+        </div></details>
       </div>
-      <div class="actions"><a href="https://github.com/OMUniversalLLC/OM.AI/tree/main/apps-script">Browse task monitoring source</a></div>
     </section>
-    <footer><a href="https://github.com/OMUniversalLLC/OM.AI">View project source on GitHub</a></footer>
   </main>
   <script>
     const navigation = [...document.querySelectorAll('nav a[href^="#"]')];
@@ -95,6 +107,13 @@
     }
     addEventListener('hashchange', showModule);
     showModule();
+    const review = document.querySelector('#review-checklist');
+    function updateReviewProgress() {
+      const checked = review.querySelectorAll('input:checked').length;
+      document.querySelector('#review-progress').textContent = checked + ' of 3 checked';
+    }
+    review.addEventListener('change', updateReviewProgress);
+    review.addEventListener('reset', () => requestAnimationFrame(updateReviewProgress));
   </script>
 </body>
 </html>
