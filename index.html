@@ -31,10 +31,10 @@
 </head><body><div id="app" class="loading-app">Loading dashboard</div><div id="toast-host" aria-live="polite"></div><script>window.OMAI_DEMO=true;window.OMAI_DEMO_DATA={"user": {"name": "Demo viewer", "role": "Viewer"}, "stores": [{"store_id": "DEMO", "name": "Demo workspace"}], "store": {"store_id": "DEMO", "name": "Demo workspace"}, "summary": {"series": [], "sales_days": 0}, "forecast": {"status": "insufficient", "points": [], "note": "Sales records are required."}, "integration": {"weather": "Not connected", "traffic": "Not connected", "news": "Not connected"}, "isDemo": true, "timestamp": "Demo only", "alerts": [], "impacts": [], "sales": [], "inventory": [], "vendors": [], "expenses": [], "operations": [], "compliance": [], "tasks": [], "incidents": [], "events": [], "signals": []};</script><script>
 (function () {
 'use strict';
-const NAV=[['overview','◈','Overview'],['radar','◉','OM Radar'],['impact','⌘','OM Impact'],['insights','▥','OM Insights'],['predict','⌁','OM Predict'],['alerts','◇','OM Alerts'],['watch','◌','OM Watch'],['cameras','▣','OM Cameras'],['wifi','⌁','OM WiFi'],['pc','▣','OM PC'],['orchestrator','✦','OM Orchestrator'],['control','☷','OM Control'],['finance','＄','OM Finance'],['fuel','⛽','Fuel Sources'],['compliance','▣','Compliance'],['settings','⚙','Settings']];
+const NAV=[['overview','◈','Overview'],['workspace','▦','All modules'],['radar','◉','OM Radar'],['impact','⌘','OM Impact'],['insights','▥','OM Insights'],['predict','⌁','OM Predict'],['alerts','◇','OM Alerts'],['watch','◌','OM Watch'],['cameras','▣','OM Cameras'],['traffic','↔','Vehicle Traffic'],['wifi','⌁','OM WiFi'],['pc','▣','OM PC'],['orchestrator','✦','OM Orchestrator'],['control','☷','OM Control'],['finance','＄','OM Finance'],['fuel','⛽','Fuel Sources'],['purchases','▤','Purchases'],['lottery','◇','Lottery'],['reports','▥','Reports'],['team','☷','Team & Incidents'],['compliance','▣','Compliance'],['settings','⚙','Settings']];
 const titleMap=Object.fromEntries(NAV.map(x=>[x[0],x[2]]));
 const demo=Boolean(window.OMAI_DEMO);
-const state={view:'overview',data:null,storeId:null,busy:false,mobileMenu:false,scenario:0};
+const state={view:Object.hasOwn(titleMap,location.hash.slice(1))?location.hash.slice(1):'overview',data:null,storeId:null,busy:false,mobileMenu:false,scenario:0};
 const $=s=>document.querySelector(s);
 const esc=x=>String(x==null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmtMoney=x=>x==null||x===''?'—':new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2}).format(Number(x));
@@ -57,7 +57,7 @@ function notify(msg,bad=false){const host=$('#toast-host');host.innerHTML=`<div 
 function renderShell(){
   const d=state.data;const nav= NAV.map((n,i)=>`${i===0||i===4?`<div class="nav-title">${i===0?'COMMAND CENTER':'WORKSPACE'}</div>`:''}<button class="nav-btn ${state.view===n[0]?'active':''}" data-nav="${n[0]}"><span class="nav-ico">${n[1]}</span><span class="nav-text">${n[2]}</span></button>`).join('');
   const stores=(d.stores||[]).map(s=>`<option value="${esc(s.store_id)}" ${s.store_id===state.storeId?'selected':''}>${esc(s.name)}</option>`).join('');
-  $('#app').className=''; $('#app').innerHTML=`${demo?'<div class="preview-flag">DEMO PREVIEW — Preview only. Live store data is available in the private dashboard.</div>':''}
+  $('#app').className=''; $('#app').innerHTML=`${demo?'<div class="preview-flag">PUBLIC PREVIEW · No live store records connected</div>':''}
     <div class="shell"><aside class="sidebar"><div class="brand"><span class="brand-mark">OM</span><span><div class="brand-name">OM <em>AI</em></div><div class="brand-sub">Intelligence platform</div></span></div>${nav}<div class="side-bottom"><div><span class="online-dot"></span>${demo?'Preview mode':'Private Google account'}</div><div style="margin-top:7px">${esc(d.user.name||d.user.email||'Manager')} · ${esc(d.user.role)}</div><div class="tiny">Internal business intelligence</div></div></aside>
     <main class="main"><header class="header"><div><div class="eyebrow">OM Universal / Intelligence Center</div><div class="page-heading" id="page-title" tabindex="-1">${esc(titleMap[state.view])}</div></div><div class="header-right"><select id="store-select" class="store-select" aria-label="Select store">${stores}</select><button class="btn" data-action="refresh" title="Update from private spreadsheet">↻ Refresh</button><button class="btn btn-primary" data-action="add:task">＋ New task</button></div></header>
     <div class="mobile-nav">${NAV.map(n=>`<button class="nav-btn ${state.view===n[0]?'active':''}" data-nav="${n[0]}"><span class="nav-text">${esc(n[2])}</span></button>`).join('')}</div>
@@ -67,7 +67,8 @@ function renderShell(){
 }
 function renderView(){
   const node=$('#view');if(!node||!state.data)return;
-  const views={overview:renderOverview,radar:renderRadar,impact:renderImpact,insights:renderInsights,predict:renderPredict,alerts:renderAlerts,watch:renderWatch,cameras:renderCameras,wifi:renderWifi,pc:renderPcIntelligence,orchestrator:renderOrchestrator,control:renderControl,finance:renderFinance,fuel:renderFuelSources,compliance:renderCompliance,settings:renderSettings};
+  const views={overview:renderOverview,workspace:renderWorkspace,traffic:renderTraffic,purchases:renderPurchases,
+    lottery:renderLottery,reports:renderReports,team:renderTeam,radar:renderRadar,impact:renderImpact,insights:renderInsights,predict:renderPredict,alerts:renderAlerts,watch:renderWatch,cameras:renderCameras,wifi:renderWifi,pc:renderPcIntelligence,orchestrator:renderOrchestrator,control:renderControl,finance:renderFinance,fuel:renderFuelSources,compliance:renderCompliance,settings:renderSettings};
   node.innerHTML=views[state.view]();
   $('#page-title').textContent=titleMap[state.view];
   document.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===state.view));
@@ -269,6 +270,72 @@ function renderFuelSources(){let fuel=state.data.fuelSources||{sources:[],latest
   ${section('Website tasks','A daily scheduled job can create one task per website and store.')}
   <div class="panel">${tasks||empty('No daily tasks yet','Owner runs installOmAiFuelDailyTasks() and scheduledOmAiFuelTasks() once.')}</div>`;
 }
+
+function moduleCard(name, description, view) {
+  return `<article class="panel"><h3>${esc(name)}</h3><p>${esc(description)}</p><button type="button" class="btn btn-sm" data-nav="${view}">Open ${esc(name)}</button></article>`;
+}
+function workspaceGroup(title, entries) {
+  return section(title,'') + `<div class="grid-3">${entries.map(entry=>moduleCard(...entry)).join('')}</div>`;
+}
+function moduleStatus(title, fields, source) {
+  return `<div class="panel"><h3>${esc(title)}</h3><div class="table-wrap"><table class="table"><thead><tr><th scope="col">Metric</th><th scope="col">Status</th></tr></thead><tbody>${fields.map(field=>`<tr><td>${esc(field)}</td><td>Unavailable in public preview</td></tr>`).join('')}</tbody></table></div><p class="small muted">Private source: ${esc(source)}</p></div>`;
+}
+function renderWorkspace() {
+  return workspaceGroup('Store operations', [
+    ['Sales insights','Sales, customer counts, and vendor variances.','insights'],
+    ['Purchases','Vendor deliveries, invoice checks, discounts, and credits.','purchases'],
+    ['Fuel sources','Fuel reference prices and store reports.','fuel'],
+    ['Inventory and tasks','Stock checks and the team task board.','control'],
+    ['Finance','Expenses and operating metrics.','finance'],
+    ['Lottery','Daily sales and reconciliation.','lottery'],
+    ['Compliance','Permit, renewal, and filing dates.','compliance'],
+    ['Team and incidents','Assignments, incidents, and handoffs.','team'],
+    ['Reports','Find daily and periodic reporting views.','reports'],
+  ]) + workspaceGroup('Monitoring and review', [
+    ['Vehicle traffic','Road, driveway, and pump-area counts.','traffic'],
+    ['Cameras','Camera coverage and detection status.','cameras'],
+    ['Wi-Fi','Network and recorder connectivity.','wifi'],
+    ['PC health','CPU, memory, disk, and available sensor readings.','pc'],
+    ['Task review','Job status, evidence, and reviewer decisions.','orchestrator'],
+    ['Traffic and weather','Road and weather sources.','radar'],
+    ['Store impact','Review factors that may affect operations.','impact'],
+    ['Sales forecast','Baseline from comparable sales days.','predict'],
+    ['Alerts','Exceptions that need follow-up.','alerts'],
+    ['Watch list','Track external events and deadlines.','watch'],
+    ['Settings','See what needs to be connected for live use.','settings'],
+  ]);
+}
+function renderTraffic() {
+  return section('Vehicle Traffic','Road, driveway, and fuel-lane counts.') +
+    moduleStatus('Traffic counters',['Road crossings','Driveway entries','Driveway exits','Vehicles at pumps','Vehicles waiting'], 'Local Vehicle Traffic monitor and private sync') +
+    workspaceGroup('Related views', [['Cameras','Check camera coverage and status.','cameras'],['Traffic and weather','Check road conditions separately from vehicle counts.','radar']]);
+}
+function renderPurchases() {
+  return section('Purchases','Track deliveries and compare invoices against the store audit.') +
+    moduleStatus('Purchase and receiving checks',['Daily vendor purchases','Delivery exceptions','Invoice variances','Discounts and credits'], 'Private receiving records and vendor audit') +
+    workspaceGroup('Related views',[['Sales insights','Review recorded vendor discrepancies.','insights'],['Inventory and tasks','Assign follow-up for shortages or damaged stock.','control']]);
+}
+function renderLottery() {
+  return section('Lottery','Find lottery sales and reconciliation records.') +
+    moduleStatus('Lottery activity',['Daily lottery sales','Period lottery sales','Reconciliation status'], 'Private sales and lottery records') +
+    workspaceGroup('Related views',[['Sales insights','Open the daily sales reporting view.','insights'],['Finance','Review operating metrics and expenses.','finance']]);
+}
+function renderReports() {
+  return workspaceGroup('Reports',[
+    ['Sales reports','Review dated sales and customer records.','insights'],
+    ['Purchase reports','Review deliveries and invoice differences.','purchases'],
+    ['Fuel reports','Review recorded fuel prices and store reports.','fuel'],
+    ['Lottery reports','Review daily sales and reconciliation status.','lottery'],
+    ['Operating expenses','Review expense entries and operating metrics.','finance'],
+    ['Traffic reports','Find road and driveway count status.','traffic'],
+  ]);
+}
+function renderTeam() {
+  return section('Team & Incidents','Track assignments, incidents, and shift handoffs.') +
+    moduleStatus('Team records',['Open assignments','Incident log','Shift handoffs'], 'Private task and incident records') +
+    workspaceGroup('Related views',[['Task board','Open the team work queue.','control'],['Task review','Check job receipts and evidence.','orchestrator'],['Watch list','Review incident and external event entries.','watch']]);
+}
+
 function renderSettings(){let d=state.data;return `${section('Integration & security','Private deployment configuration')}
  <div class="grid-equal"><div class="panel"><h3>Data storage</h3><p>Google Sheets · ${esc(d.store.name)}</p><a class="btn btn-sm" ${demo?'hidden':''} href="${esc(safeUrl(d.databaseUrl))}" target="_blank" rel="noopener">Open private database ↗</a><div class="notice">The public GitHub Pages site is NOT a safe place for private live store data. Keep the Apps Script app restricted and confirm account permissions.</div></div>
  <div class="panel"><h3>Services</h3>${Object.entries(d.integration).map(([key,val])=>`<div class="signal-row"><div class="grow"><div class="row-title">${esc(key.toUpperCase())}</div><div class="row-description">${esc(val)}</div></div>${pill(val==='configured'?'Configured':'Check setup',val==='configured'?'ok':'info')}</div>`).join('')}</div></div>
@@ -303,7 +370,7 @@ async function load(storeId){
  return success;
 }
 document.addEventListener('click',async event=>{
- const nav=event.target.closest('[data-nav]');if(nav&&Object.hasOwn(titleMap,nav.dataset.nav)){state.view=nav.dataset.nav;renderView();$('#page-title').focus({preventScroll:true});window.scrollTo(0,0);return;}
+ const nav=event.target.closest('[data-nav]');if(nav&&Object.hasOwn(titleMap,nav.dataset.nav)){state.view=nav.dataset.nav;if(location.hash!=='#'+state.view)location.hash=state.view;renderView();$('#page-title').focus({preventScroll:true});window.scrollTo(0,0);return;}
  const b=event.target.closest('[data-action],[data-fuel-task],[data-camera-assign],[data-job-review]');if(!b)return;
  const act=b.dataset.action;
  if(act==='close-modal'){ $('#modal-mount').innerHTML='';return; }
@@ -362,6 +429,11 @@ document.addEventListener('submit',async event=>{
    try{let result=kind==='fuelObservation'?await api('saveOmAiFuelObservation',state.storeId,payload):kind==='fuelReport'?await api('saveOmAiFuelReport',state.storeId,payload):await api('saveOmAiRecord',kind,payload);if(!result.ok)throw Error(result.answer||'Record not saved.');$('#modal-mount').innerHTML='';await load(state.storeId);notify('Saved record '+result.id);}catch(e){notify(e.message,true);btn.disabled=false;btn.textContent='Save record';}
    return;
  }
+});
+addEventListener('hashchange',()=>{
+  const requested=location.hash.slice(1);
+  const next=Object.hasOwn(titleMap,requested)?requested:'overview';
+  if(next!==state.view){state.view=next;renderView();}
 });
 load(null);
 })();
