@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>OM AI Dashboard Demo</title><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>OM AI Dashboard</title><style>
 :root{--nav:#0c1426;--nav2:#121f37;--bg:#f4f6fa;--panel:#fff;--ink:#17243a;--muted:#748197;--line:#e5eaf1;--accent:#514de8;--purple:#ebeafe;--teal:#137e80;--mint:#dcf5ee;--orange:#ae641c;--amber:#fff0db;--red:#c45361;--rose:#fff0f1;--shadow:0 9px 36px rgba(16,38,79,.045)}
 *{box-sizing:border-box}html,body{height:100%;margin:0}body{font:14px/1.5 'DM Sans',system-ui,Arial,sans-serif;background:var(--bg);color:var(--ink)}button,input,select,textarea{font:inherit}a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}button{cursor:pointer}button:disabled{opacity:.55;cursor:not-allowed}
 .loading-app{height:100vh;display:flex;align-items:center;justify-content:center;gap:15px;color:var(--muted)}.spinner{width:25px;height:25px;border-radius:50%;border:3px solid #e5e6f6;border-top-color:var(--accent);animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
@@ -49,7 +49,7 @@
 .camera-live-form{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .camera-live-form input{min-width:0;max-width:100%;width:320px;padding:8px;border:1px solid var(--line);border-radius:8px}
 </style>
-</head><body><div id="app" class="loading-app">Loading dashboard</div><div id="toast-host" aria-live="polite"></div><script>window.OMAI_DEMO=true;window.OMAI_DEMO_DATA={"user": {"name": "Demo viewer", "role": "Viewer"}, "stores": [{"store_id": "DEMO", "name": "Demo workspace"}], "store": {"store_id": "DEMO", "name": "Demo workspace"}, "summary": {"series": [], "sales_days": 0}, "forecast": {"status": "insufficient", "points": [], "note": "Sales records are required."}, "integration": {"weather": "Not connected", "traffic": "Not connected", "news": "Not connected"}, "isDemo": true, "timestamp": "Demo only", "alerts": [], "impacts": [], "sales": [], "inventory": [], "vendors": [], "expenses": [], "operations": [], "compliance": [], "tasks": [], "incidents": [], "events": [], "signals": []};</script><script>
+</head><body><div id="app" class="loading-app">Loading dashboard</div><div id="toast-host" aria-live="polite"></div><script>window.OMAI_DEMO=true;window.OMAI_DEMO_DATA={"user": {"name": "Dashboard visitor", "role": "Viewer"}, "stores": [{"store_id": "DEMO", "name": "OM AI Workspace"}], "store": {"store_id": "DEMO", "name": "OM AI Workspace"}, "summary": {"series": [], "sales_days": 0}, "forecast": {"status": "insufficient", "points": [], "note": "Sales records are required."}, "integration": {"weather": "Not connected", "traffic": "Not connected", "news": "Not connected"}, "isDemo": true, "timestamp": "Demo only", "alerts": [], "impacts": [], "sales": [], "inventory": [], "vendors": [], "expenses": [], "operations": [], "compliance": [], "tasks": [], "incidents": [], "events": [], "signals": []};</script><script>
 (function () {
 'use strict';
 const NAV=[['overview','◈','Overview'],['workspace','▦','All modules'],['sheets','▦','Google Sheets'],['radar','◉','OM Radar'],['impact','⌘','OM Impact'],['insights','▥','OM Insights'],['predict','⌁','OM Predict'],['alerts','◇','OM Alerts'],['watch','◌','OM Watch'],['cameras','▣','OM Cameras'],['traffic','↔','Vehicle Traffic'],['wifi','⌁','OM WiFi'],['pc','▣','OM PC'],['orchestrator','✦','OM Orchestrator'],['control','☷','OM Control'],['finance','＄','OM Finance'],['fuel','⛽','Fuel Sources'],['purchases','▤','Purchases'],['lottery','◇','Lottery'],['reports','▥','Reports'],['team','☷','Team & Incidents'],['compliance','▣','Compliance'],['settings','⚙','Settings']];
@@ -85,8 +85,8 @@ function renderShell(){
   const d=state.data;const nav= NAV.map((n,i)=>`${i===0||i===4?`<div class="nav-title">${i===0?'COMMAND CENTER':'WORKSPACE'}</div>`:''}<button class="nav-btn ${state.view===n[0]?'active':''}" data-nav="${n[0]}"><span class="nav-ico">${n[1]}</span><span class="nav-text">${n[2]}</span></button>`).join('');
   const stores=(d.stores||[]).map(s=>`<option value="${esc(s.store_id)}" ${s.store_id===state.storeId?'selected':''}>${esc(s.name)}</option>`).join('');
   $('#app').className=''; $('#app').innerHTML=`${demo?'<div class="preview-flag" id="dashboard-status" role="status"></div>':''}
-    <div class="shell"><aside class="sidebar"><div class="brand"><span class="brand-mark">OM</span><span><div class="brand-name">OM <em>AI</em></div><div class="brand-sub">Intelligence platform</div></span></div>${nav}<div class="side-bottom"><div><span class="online-dot"></span>${demo?'Preview mode':'Private Google account'}</div><div style="margin-top:7px">${esc(d.user.name||d.user.email||'Manager')} · ${esc(d.user.role)}</div><div class="tiny">Internal business intelligence</div></div></aside>
-    <main class="main"><header class="header"><div><div class="eyebrow">OM Universal / Intelligence Center</div><div class="page-heading" id="page-title" tabindex="-1">${esc(titleMap[state.view])}</div></div><div class="header-right"><select id="store-select" class="store-select" aria-label="Select store">${stores}</select><button class="btn" data-action="refresh" title="Update from private spreadsheet">↻ Refresh</button><button class="btn btn-primary" data-action="add:task">＋ New task</button></div></header>
+    <div class="shell"><aside class="sidebar"><div class="brand"><span class="brand-mark">OM</span><span><div class="brand-name">OM <em>AI</em></div><div class="brand-sub">Intelligence platform</div></span></div>${nav}<div class="side-bottom"><div><span class="online-dot"></span>${demo?'Operations workspace':'Private Google account'}</div><div style="margin-top:7px">${esc(d.user.name||d.user.email||'Manager')} · ${esc(d.user.role)}</div><div class="tiny">Internal business intelligence</div></div></aside>
+    <main class="main"><header class="header"><div><div class="eyebrow">OM Universal / Intelligence Center</div><div class="page-heading" id="page-title" tabindex="-1">${esc(titleMap[state.view])}</div></div><div class="header-right">${demo?'<button class="btn" data-action="refresh">↻ Refresh</button><button class="btn btn-primary" data-nav="sheets">Google Sheets</button>':`<select id="store-select" class="store-select" aria-label="Select store">${stores}</select><button class="btn" data-action="refresh" title="Update from private spreadsheet">↻ Refresh</button><button class="btn btn-primary" data-action="add:task">＋ New task</button>`}</div></header>
     <div class="mobile-nav">${NAV.map(n=>`<button class="nav-btn ${state.view===n[0]?'active':''}" data-nav="${n[0]}"><span class="nav-text">${esc(n[2])}</span></button>`).join('')}</div>
     <div id="view" class="content"></div></main></div><div id="modal-mount"></div>`;
   $('.mobile-nav').style.display=window.innerWidth<=570?'flex':'none';
@@ -97,11 +97,11 @@ function renderView(){
   const views={overview:renderOverview,workspace:renderWorkspace,sheets:renderSheetIntegration,traffic:renderTraffic,purchases:renderPurchases,
     lottery:renderLottery,reports:renderReports,team:renderTeam,radar:renderRadar,impact:renderImpact,insights:renderInsights,predict:renderPredict,alerts:renderAlerts,watch:renderWatch,cameras:renderCameras,wifi:renderWifi,pc:renderPcIntelligence,orchestrator:renderOrchestrator,control:renderControl,finance:renderFinance,fuel:renderFuelSources,compliance:renderCompliance,settings:renderSettings};
   clearInterval(liveCameraTimer);
-  node.innerHTML=views[state.view]();
-  if(sheetModules[state.view]&&state.view!=='traffic')node.insertAdjacentHTML('afterbegin','<button class="btn btn-sm" style="margin-bottom:12px" data-sheet-module="'+state.view+'">Read source in Google Sheets view</button>');
+  const view=state.view;
+  node.innerHTML=demo&&!['sheets','traffic','workspace'].includes(view)?renderOperationsView(view):views[view]();
   updateSheetsForView();
   updateDashboardStatus();
-  if(state.view==='traffic'&&liveCameraOrigin)startCameraPreviews();
+  if((state.view==='traffic'||state.view==='cameras')&&liveCameraOrigin)startCameraPreviews();
   $('#page-title').textContent=titleMap[state.view];
   document.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===state.view));
 }
@@ -431,7 +431,8 @@ function updateDashboardStatus() {
   const banner=document.getElementById('dashboard-status');
   if(!banner)return;
   let message=sheetsSignedIn()?'OM AI Dashboard · Google Sheets authorized':'OM AI Dashboard · Connect Google Sheets to view records';
-  if(state.view==='traffic') {
+  if(sheetsSignedIn()&&workspaceResults.get(state.view)?.results.some(item=>item.status==='fulfilled'))message='OM AI Dashboard · Google Sheets data loaded';
+  if(state.view==='traffic'||state.view==='cameras') {
     const connected=document.querySelectorAll('[data-camera-feed][data-result="live"]').length;
     const failed=document.querySelectorAll('[data-camera-feed][data-result="unavailable"]').length;
     if(connected)message=`Traffic cameras · ${connected} of 3 feeds live`;
@@ -469,7 +470,8 @@ document.addEventListener('submit', event=>{
     liveCameraOrigin=url.origin;
     if(dashboardRoute(location.hash).camera)history.replaceState(null,'',cameraBookmark(liveCameraOrigin));
     refreshCameraBookmark();
-    document.getElementById('trafficHistorySource').href=url.origin+'/history.json';
+    const historyLink=document.getElementById('trafficHistorySource');
+    if(historyLink)historyLink.href=url.origin+'/history.json';
     for(const img of document.querySelectorAll('[data-camera-feed]')) {
       img.hidden=true;
       delete img.dataset.result;
@@ -493,7 +495,8 @@ document.addEventListener('click', event=>{
   if(dashboardRoute(location.hash).camera)history.replaceState(null,'','#traffic');
   refreshCameraBookmark();
   const forgotten=rememberCameraOrigin('');
-  document.getElementById('trafficHistorySource').href='http://127.0.0.1:8765/history.json';
+  const historyLink=document.getElementById('trafficHistorySource');
+  if(historyLink)historyLink.href='http://127.0.0.1:8765/history.json';
   document.getElementById('cameraOrigin').value='';
   for(const [role] of liveCameraFeeds) {
     const img=document.querySelector(`[data-camera-feed="${role}"]`);
@@ -678,7 +681,7 @@ document.addEventListener('click',async event=>{
    try{await api('setOmAiFuelTaskStatus',state.storeId,b.dataset.fuelTask,'Completed',link);await load(state.storeId);notify('Fuel source task completed with evidence.');}
    catch(e){notify(e.message,true);} return;
  }
- if(act==='refresh'){let ok=await load(state.storeId);if(ok)notify(demo?'Demo preview refreshed.':'Dashboard read from private Sheet.');return;}
+ if(act==='refresh'){if(demo){refreshPublicWorkspace();return;}if(await load(state.storeId))notify('Dashboard read from private Sheet.');return;}
  if(act==='refreshSources'){
   if(demo){notify('Preview mode: no live source requests are made.');return;}
   b.disabled=true;b.textContent='Refreshing sources…';
@@ -834,6 +837,7 @@ async function refreshSheets(){
 }
 function resetSheets(){
   Object.assign(sheets,{token:'',expires:0,auth:sheets.auth+1,request:sheets.request+1,tabs:[],rows:[],page:0,message:'',traffic:null});
+  workspaceResults.clear();
 }
 function selectSheet(book,tab=storesSheets[book][2]){
   Object.assign(sheets,{book,tab,tabs:[],rows:[],page:0,request:sheets.request+1,message:''});
@@ -894,7 +898,7 @@ document.addEventListener('submit',async event=>{
       callback:response=>{
         if(auth!==sheets.auth)return;
         if(!response.access_token||!response.scope?.split(/\s+/).includes(readScope)){
-          sheetMessage('Google did not grant read-only access.');return;
+          sheetMessage(response.error==='access_denied'?'Google denied authorization. Check that the account is an approved test user for this OAuth client.':'Google did not grant read-only access.');return;
         }
         Object.assign(sheets,{clientId,token:response.access_token,expires:Date.now()+Number(response.expires_in||3600)*1000});
         try{localStorage.setItem(webClientKey,clientId);}catch{}
@@ -942,11 +946,91 @@ function updateSheetsForView(){
   if(!sheetsSignedIn())return;
   if(state.view==='sheets')refreshSheets();
   if(state.view==='traffic')readTrafficSheets();
+  if(demo&&workspaceSources[state.view])readWorkspaceSources(state.view);
 }
 setInterval(()=>{
   if(sheets.token&&!sheetsSignedIn()){resetSheets();renderView();}
-  if(sheetsSignedIn()&&state.view==='traffic'&&!document.hidden)readTrafficSheets();
+  if(sheetsSignedIn()&&!document.hidden){
+    if(state.view==='traffic')readTrafficSheets();
+    if(demo&&workspaceSources[state.view])readWorkspaceSources(state.view);
+  }
 },60000);
+
+
+const workspaceSources={
+  overview:[['Store summary','master','Dashboard','A1:O30'],['Daily sales records','sales','Daily Records','A1:Q30'],['Latest traffic readings','traffic','Live Traffic','A1:B21']],
+  insights:[['Daily sales records','sales','Daily Records','A1:Q100']],
+  purchases:[['Receiving and delivery costs','sales','Mercury Delivery Costs','A1:U100']],
+  fuel:[['Mercury sales summary','sales','Mercury Sales Summary','A1:AJ100']],
+  lottery:[['Mercury sales summary','sales','Mercury Sales Summary','A1:AJ100']],
+  reports:[['Daily sales records','sales','Daily Records','A1:Q100'],['Report coverage','sales','Mercury Report Coverage','A1:Q100']],
+  finance:[['Operating expenses','master','Support_Expenses','A1:U100']],
+  control:[['Mercury tasks','master','Mercury_Tasks','A1:U100']],
+  team:[['Mercury tasks','master','Mercury_Tasks','A1:U100']]
+};
+const missingWorkspaceSources={
+  radar:'Connect the store’s weather, road traffic, and news sources.',
+  impact:'Connect operating measurements and external events before estimating their impact.',
+  predict:'A dated sales series and a forecast service are needed.',
+  alerts:'Connect the source feeds and configure alert rules.',
+  watch:'Connect a store event and incident feed.',
+  wifi:'Connect the Backoffice network agent and device inventory.',
+  pc:'Connect the Backoffice PC health agent.',
+  orchestrator:'Connect signed job results from the store workers.',
+  compliance:'Connect the store’s compliance register and due dates.'
+};
+const workspaceResults=new Map(),workspaceRequests=new Map();
+function workspaceSourceLink(view){
+  return '<button class="btn btn-sm" data-sheet-module="'+esc(view)+'">Browse Google Sheets</button>';
+}
+function workspaceTables(view){
+  if(!sheetsSignedIn())return '<div class="panel">'+empty('Google sign-in required','Connect Google Sheets to see your store records here.')+workspaceSourceLink(view)+'</div>';
+  const current=workspaceResults.get(view);
+  if(!current)return '<div class="panel"><p role="status">Reading Google Sheets…</p></div>';
+  return workspaceSources[view].map(([label,book,tab,range],i)=>{
+    const result=current.results[i];
+    const detail=result.status==='fulfilled'?makeRows(result.value):'<p role="status">'+esc(result.reason.message)+'</p>';
+    return '<div class="panel"><h3>'+esc(label)+'</h3><p class="small muted">'+esc(storesSheets[book][0])+' · '+esc(tab)+' · '+esc(range)+'</p>'+detail+'</div>';
+  }).join('');
+}
+function renderOperationsView(view){
+  if(view==='cameras')return renderCameraFeeds();
+  if(view==='settings')return section('Connections','Sources for this dashboard')+
+    '<div class="panel"><h3>Store records</h3><p>Google Sheets provides sales, operations, and traffic counts after sign-in.</p>'+workspaceSourceLink('settings')+'</div>'+
+    '<div class="panel"><h3>Camera previews</h3><p>Open Cameras to connect to your private Tailscale Serve address.</p><button class="btn" data-nav="cameras">Open Cameras</button></div>';
+  if(missingWorkspaceSources[view])return section(esc(titleMap[view]),'Source setup')+
+    '<div class="panel">'+empty('Source needed',missingWorkspaceSources[view])+'</div>';
+  const subtitle=view==='overview'?'Store operations and source status':'Records from Google Sheets';
+  const note=({fuel:'The source is the store’s recorded fuel figures. A live street-price feed needs its own source.',
+    control:'Tasks are read-only here. Current inventory requires a stock-on-hand source.',
+    team:'Task rows are available below. An incident register still needs a separate source.'})[view];
+  return section(view==='overview'?'Store operations overview':esc(titleMap[view]),subtitle,sheetsSignedIn()?workspaceSourceLink(view):'')+
+    '<div id="workspaceLiveRecords" data-record-view="'+esc(view)+'">'+workspaceTables(view)+'</div>'+
+    (note?'<p class="small muted">'+esc(note)+'</p>':'');
+}
+async function readWorkspaceSources(view){
+  if(!sheetsSignedIn()||!workspaceSources[view])return;
+  const {auth,token}=sheets, request=(workspaceRequests.get(view)??0)+1;
+  workspaceRequests.set(view,request);
+  const results=await Promise.allSettled(workspaceSources[view].map(([,book,tab,range])=>getSheetValues(book,tab,range,token)));
+  if(auth!==sheets.auth||workspaceRequests.get(view)!==request||!sheetsSignedIn())return;
+  workspaceResults.set(view,{results});
+  const panel=document.getElementById('workspaceLiveRecords');
+  if(panel?.dataset.recordView===view)panel.innerHTML=workspaceTables(view);
+  updateDashboardStatus();
+}
+function refreshPublicWorkspace(){
+  if(state.view==='traffic'||state.view==='cameras'){
+    if(liveCameraOrigin)refreshCameraFeeds();
+    if(state.view==='traffic'&&sheetsSignedIn())readTrafficSheets();
+    return;
+  }
+  if(state.view==='sheets'){if(sheetsSignedIn())refreshSheets();else notify('Connect Google Sheets to load records.');return;}
+  if(workspaceSources[state.view]){
+    if(sheetsSignedIn())readWorkspaceSources(state.view);
+    else location.hash='sheets';
+  }
+}
 
 load(null);
 })();
