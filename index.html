@@ -100,6 +100,7 @@ function renderView(){
   const view=state.view;
   node.innerHTML=demo&&!['sheets','traffic','workspace'].includes(view)?renderOperationsView(view):views[view]();
   updateSheetsForView();
+  if(demo)refreshRadarIfDue();
   updateDashboardStatus();
   if((state.view==='traffic'||state.view==='cameras')&&liveCameraOrigin)startCameraPreviews();
   $('#page-title').textContent=titleMap[state.view];
@@ -994,6 +995,7 @@ function workspaceTables(view){
   }).join('');
 }
 function renderOperationsView(view){
+  if(view==='radar')return renderLiveRadar();
   if(view==='cameras')return renderCameraFeeds();
   if(view==='settings')return section('Connections','Sources for this dashboard')+
     '<div class="panel"><h3>Store records</h3><p>Google Sheets provides sales, operations, and traffic counts after sign-in.</p>'+workspaceSourceLink('settings')+'</div>'+
@@ -1020,6 +1022,7 @@ async function readWorkspaceSources(view){
   updateDashboardStatus();
 }
 function refreshPublicWorkspace(){
+  if(state.view==='radar'){refreshLiveRadar();return;}
   if(state.view==='traffic'||state.view==='cameras'){
     if(liveCameraOrigin)refreshCameraFeeds();
     if(state.view==='traffic'&&sheetsSignedIn())readTrafficSheets();
@@ -1031,6 +1034,177 @@ function refreshPublicWorkspace(){
     else location.hash='sheets';
   }
 }
+
+
+const radarLocationKey='om-universal.om-ai.radar-location';
+const radarEventsKey='om-universal.om-ai.radar-events';
+const defaultRadarLocation={label:'Plant City, FL · regional forecast',lat:28.0186,lon:-82.1147};
+function readRadarSetting(key,fallback){
+  try{return JSON.parse(localStorage.getItem(key))??fallback;}catch{return fallback;}
+}
+function saveRadarSetting(key,value){
+  try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{return false;}
+}
+function parseRadarLocation(label,lat,lon){
+  if(String(lat).trim()===''||String(lon).trim()==='')return null;
+  lat=Number(lat);lon=Number(lon);
+  if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180)return null;
+  return {label:String(label||'Custom location').trim().slice(0,90)||'Custom location',lat:Number(lat.toFixed(4)),lon:Number(lon.toFixed(4))};
+}
+function radarSourceLink(input){
+  try{const url=new URL(input);return url.protocol==='https:'&&!url.username&&!url.password?url.href:'';}catch{return '';}
+}
+const savedRadarLocation=readRadarSetting(radarLocationKey,{});
+let radarLocation=parseRadarLocation(savedRadarLocation.label,savedRadarLocation.lat??'',savedRadarLocation.lon??'')??defaultRadarLocation;
+const radarState={weather:null,alerts:null,road:null,key:'',lastAttempt:0,request:0};
+const rawRadarEvents=readRadarSetting(radarEventsKey,[]);
+let radarEvents=Array.isArray(rawRadarEvents)?rawRadarEvents.filter(event=>event&&typeof event.title==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(event.date)&&radarSourceLink(event.source)):[];
+const radarTime=value=>new Date(value).toLocaleString('en-US',{timeZone:'America/New_York',dateStyle:'medium',timeStyle:'short'})+' ET';
+function radarForecastMarkup(){
+  const response=radarState.weather;
+  if(!response)return '<p role="status">Loading National Weather Service forecast…</p>';
+  if(response.error)return '<p role="status">'+esc(response.error)+'</p>';
+  const periods=response.periods.map(period=>'<li><strong>'+esc(period.name)+'</strong> · '+esc(period.temperature)+'°'+esc(period.temperatureUnit)+' · '+esc(period.shortForecast)+'</li>').join('');
+  return '<ul>'+periods+'</ul>'+(response.updated?'<p class="small muted">NWS update '+esc(radarTime(response.updated))+'</p>':'');
+}
+function radarAlertsMarkup(){
+  const response=radarState.alerts;
+  if(!response)return '<p role="status">Checking active NWS alerts…</p>';
+  if(response.error)return '<p role="status">'+esc(response.error)+'</p>';
+  if(!response.items.length)return '<p>No active NWS alerts returned for this point.</p>';
+  return '<ul>'+response.items.map(alert=>'<li><strong>'+esc(alert.event)+'</strong> · '+esc(alert.headline||alert.areaDesc||'')+'</li>').join('')+'</ul>';
+}
+function radarRoadMarkup(){
+  if(!radarState.key)return '<p>Use the official FL511 map for current incidents, closures, and cameras. Add a TomTom key for a nearby road-speed reading here.</p>';
+  if(!radarState.road)return '<p role="status">Checking TomTom road speed…</p>';
+  if(radarState.road.error)return '<p role="status">'+esc(radarState.road.error)+'</p>';
+  const {currentSpeed,freeFlowSpeed,roadClosure,checked}=radarState.road;
+  return '<p><strong>'+esc(currentSpeed)+' mph</strong> current speed · '+esc(freeFlowSpeed)+' mph free-flow speed'+(roadClosure?' · Closure reported':'')+'</p>'+
+    '<p class="small muted">Nearby road segment checked '+esc(radarTime(checked))+'. Speeds do not measure passing vehicles.</p>';
+}
+function radarEventsMarkup(){
+  if(!radarEvents.length)return '<p>No roadwork or business-impact events saved in this browser.</p>';
+  return '<ul>'+[...radarEvents].sort((a,b)=>b.date.localeCompare(a.date)).map(event=>'<li><strong>'+esc(event.date)+'</strong> · '+esc(event.title)+
+    ' <a href="'+esc(radarSourceLink(event.source))+'" target="_blank" rel="noopener noreferrer">Official notice ↗</a></li>').join('')+'</ul>';
+}
+function renderLiveRadar(){
+  return section('OM Radar','Weather, traffic, and verified events for '+esc(radarLocation.label),'<button class="btn btn-primary" data-radar-action="refresh">Refresh sources</button>')+
+    '<div class="panel"><details><summary>Set coordinates</summary><form id="radarLocationForm" class="camera-live-form">'+
+    '<label for="radarLabel">Location</label><input id="radarLabel" maxlength="90" value="'+esc(radarLocation.label)+'">'+
+    '<label for="radarLat">Latitude</label><input id="radarLat" type="number" step="any" min="-90" max="90" required value="'+esc(radarLocation.lat)+'">'+
+    '<label for="radarLon">Longitude</label><input id="radarLon" type="number" step="any" min="-180" max="180" required value="'+esc(radarLocation.lon)+'">'+
+    '<button class="btn" type="submit">Save location and refresh</button></form></details>'+
+    '<p class="small muted">Sources refresh when this page opens and hourly while it stays visible. Location settings are saved in this browser.</p></div>'+
+    '<div class="grid-2"><div class="panel"><h3>National Weather Service</h3><div id="radarWeather">'+radarForecastMarkup()+'</div>'+
+    '<p><a href="https://forecast.weather.gov/MapClick.php?lat='+esc(radarLocation.lat)+'&amp;lon='+esc(radarLocation.lon)+'" target="_blank" rel="noopener noreferrer">NWS point forecast ↗</a> · '+
+    '<a href="https://radar.weather.gov/" target="_blank" rel="noopener noreferrer">Weather radar ↗</a></p></div>'+
+    '<div class="panel"><h3>Active weather alerts</h3><div id="radarAlerts">'+radarAlertsMarkup()+'</div></div></div>'+
+    '<div class="grid-2"><div class="panel"><h3>Road traffic</h3><div id="radarRoad">'+radarRoadMarkup()+'</div>'+
+    '<p><a href="https://fl511.com/" target="_blank" rel="noopener noreferrer">Open FL511 live traffic map ↗</a></p>'+
+    '<details><summary>Connect TomTom road speed</summary><form id="radarTrafficForm" class="camera-live-form">'+
+    '<label for="radarTomTomKey">TomTom Traffic API key</label><input id="radarTomTomKey" type="password" required autocomplete="off">'+
+    '<button class="btn" type="submit">Check road speed</button></form>'+
+    '<p class="small muted">Your key is sent to TomTom for requests from this tab and is cleared when you reload.</p></details></div>'+
+    '<div class="panel"><h3>Local and national news</h3><p><a href="https://news.google.com/search?q=Plant%20City%20Florida%20Hillsborough%20County&amp;hl=en-US&amp;gl=US&amp;ceid=US%3Aen" target="_blank" rel="noopener noreferrer">Plant City and Hillsborough headlines ↗</a></p>'+
+    '<p><a href="https://news.google.com/home?hl=en-US&amp;gl=US&amp;ceid=US%3Aen" target="_blank" rel="noopener noreferrer">National headlines ↗</a></p>'+
+    '<p class="small muted">Confirm any impact with the issuing agency before saving an event.</p></div></div>'+
+    section('Tracked construction and events','Roadwork notices and operational events you verify.')+
+    '<div class="panel"><div id="radarEvents">'+radarEventsMarkup()+'</div>'+
+    '<details><summary>Add verified event</summary><form id="radarEventForm" class="camera-live-form">'+
+    '<label for="radarEventDate">Event date</label><input id="radarEventDate" type="date" required>'+
+    '<label for="radarEventTitle">Title</label><input id="radarEventTitle" required maxlength="120">'+
+    '<label for="radarEventSource">Official source URL</label><input id="radarEventSource" type="url" required>'+
+    '<button class="btn" type="submit">Save event</button></form></details></div>';
+}
+async function radarFetch(url){
+  const response=await fetch(url,{cache:'no-cache',referrerPolicy:'no-referrer',signal:AbortSignal.timeout(12000)});
+  if(!response.ok)throw Error('Source returned HTTP '+response.status+'.');
+  return response.json();
+}
+async function nwsRadarForecast(point){
+  const location=await radarFetch('https://api.weather.gov/points/'+point);
+  const url=new URL(location.properties.forecast);
+  if(url.origin!=='https://api.weather.gov'||!url.pathname.startsWith('/gridpoints/'))throw Error('Unexpected forecast URL.');
+  const result=await radarFetch(url.href);
+  const periods=result.properties?.periods?.slice(0,4);
+  if(!periods?.length)throw Error('No forecast periods returned.');
+  return {periods,updated:result.properties.updated};
+}
+async function nwsRadarAlerts(point){
+  const data=await radarFetch('https://api.weather.gov/alerts/active?point='+encodeURIComponent(point));
+  if(!Array.isArray(data.features))throw Error('Unexpected alert response.');
+  return {items:data.features.map(feature=>feature.properties).filter(Boolean)};
+}
+async function tomtomRadarRoad(point,key){
+  const query=new URLSearchParams({point,key,unit:'mph'});
+  const data=await radarFetch('https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/10/json?'+query);
+  const flow=data.flowSegmentData;
+  if(!Number.isFinite(flow?.currentSpeed)||!Number.isFinite(flow?.freeFlowSpeed))throw Error('TomTom returned no road speed.');
+  return {currentSpeed:flow.currentSpeed,freeFlowSpeed:flow.freeFlowSpeed,roadClosure:flow.roadClosure===true,checked:Date.now()};
+}
+function updateRadarPanel(id,markup){
+  const node=document.getElementById(id);
+  if(node)node.innerHTML=markup();
+}
+async function refreshLiveRadar(){
+  const point=radarLocation.lat+','+radarLocation.lon;
+  const jobs=[
+    ['weather','radarWeather',radarForecastMarkup,nwsRadarForecast(point),'NWS forecast unavailable. Use the NWS forecast link.'],
+    ['alerts','radarAlerts',radarAlertsMarkup,nwsRadarAlerts(point),'NWS alerts unavailable. Check the official weather source.']
+  ];
+  if(radarState.key)jobs.push(['road','radarRoad',radarRoadMarkup,tomtomRadarRoad(point,radarState.key),'TomTom is unavailable. Check the key and use FL511 for road conditions.']);
+  const request=++radarState.request;
+  radarState.lastAttempt=Date.now();
+  await Promise.all(jobs.map(async ([field,id,markup,job,error])=>{
+    radarState[field]=null;
+    updateRadarPanel(id,markup);
+    let value;
+    try{value=await job;}catch{value={error};}
+    if(request!==radarState.request)return;
+    radarState[field]=value;
+    updateRadarPanel(id,markup);
+  }));
+}
+document.addEventListener('click',event=>{
+  if(event.target.closest('[data-radar-action="refresh"]'))refreshLiveRadar();
+});
+document.addEventListener('submit',event=>{
+  const id=event.target.id;
+  if(!['radarLocationForm','radarTrafficForm','radarEventForm'].includes(id))return;
+  event.preventDefault();
+  const value=id=>document.getElementById(id).value.trim();
+  if(id==='radarLocationForm'){
+    const next=parseRadarLocation(value('radarLabel'),value('radarLat'),value('radarLon'));
+    if(!next){notify('Enter a valid latitude and longitude.',true);return;}
+    radarLocation=next;
+    Object.assign(radarState,{weather:null,alerts:null,road:null,lastAttempt:Date.now()});
+    const saved=saveRadarSetting(radarLocationKey,next);
+    renderView();
+    refreshLiveRadar();
+    if(!saved)notify('This browser could only apply the location for this visit.');
+  }
+  if(id==='radarTrafficForm'){
+    radarState.key=value('radarTomTomKey');
+    event.target.reset();
+    if(!radarState.key){notify('Enter a TomTom Traffic API key.',true);return;}
+    refreshLiveRadar();
+  }
+  if(id==='radarEventForm'){
+    const title=value('radarEventTitle'),date=value('radarEventDate'),source=radarSourceLink(value('radarEventSource'));
+    if(!title||!/^\d{4}-\d{2}-\d{2}$/.test(date)||!source){notify('Enter a date, title, and an HTTPS link to the notice.',true);return;}
+    if(radarEvents.some(item=>item.date===date&&item.title===title&&item.source===source)){notify('This event is already saved.');return;}
+    radarEvents.push({date,title,source});
+    const saved=saveRadarSetting(radarEventsKey,radarEvents);
+    event.target.reset();
+    updateRadarPanel('radarEvents',radarEventsMarkup);
+    notify(saved?'Event saved in this browser.':'Event is available for this visit. Browser storage could not save it.');
+  }
+});
+function refreshRadarIfDue(){
+  if(state.view==='radar'&&!document.hidden&&Date.now()-radarState.lastAttempt>=3600000)refreshLiveRadar();
+}
+document.addEventListener('visibilitychange',refreshRadarIfDue);
+setInterval(refreshRadarIfDue,60000);
 
 load(null);
 })();
