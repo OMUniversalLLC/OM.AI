@@ -422,6 +422,7 @@ document.addEventListener('submit', event=>{
     const url=new URL(document.getElementById('cameraOrigin').value.trim());
     if(!isCameraOrigin(url))throw new Error('Invalid private address');
     liveCameraOrigin=url.origin;
+    document.getElementById('trafficHistorySource').href=url.origin+'/history.json';
     for(const img of document.querySelectorAll('[data-camera-feed]')) {
       img.hidden=true;
       delete img.dataset.result;
@@ -440,6 +441,7 @@ document.addEventListener('click', event=>{
   if(event.target.id!=='stopCameraFeeds')return;
   clearInterval(liveCameraTimer);
   liveCameraOrigin='';
+  document.getElementById('trafficHistorySource').href='http://127.0.0.1:8765/history.json';
   document.getElementById('cameraOrigin').value='';
   for(const [role] of liveCameraFeeds) {
     const img=document.querySelector(`[data-camera-feed="${role}"]`);
@@ -454,8 +456,49 @@ document.addEventListener('click', event=>{
   updateDashboardStatus();
   document.getElementById('cameraLiveStatus').textContent='Cameras disconnected.';
 });
+const dailyHistoryColumns=['Florida date','Side View road','Fuel camera highway trial','Vehicles in','Vehicles out','People in','People out'];
+let dailyHistoryRows=[];
+function dailyHistoryTable() {
+  return `<table class="table"><thead><tr>${dailyHistoryColumns.map(label=>`<th scope="col">${label}</th>`).join('')}</tr></thead><tbody>${dailyHistoryRows.map(row=>`<tr>${row.map(value=>`<td>${value==null?'&mdash;':esc(value)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+}
+function renderDailyHistory() {
+  const privatePreview=liveCameraOrigin?liveCameraOrigin+'/history.json':'http://127.0.0.1:8765/history.json';
+  return section('Daily traffic history','Saved totals by Florida business date')+
+    `<div class="panel camera-score-controls">
+      <a class="btn btn-primary" href="https://docs.google.com/spreadsheets/d/1YCzEfXkICCx9wYBVmGe_1pav9dlmATr1pcGBz6FsMGY/edit#gid=211126" target="_blank" rel="noopener noreferrer">Open private daily history in Google Sheets</a>
+      <label class="btn btn-sm" for="trafficHistoryFile">Load camera history JSON</label>
+      <input id="trafficHistoryFile" type="file" accept=".json,application/json">
+      <p class="small muted">Download <a id="trafficHistorySource" href="${esc(privatePreview)}" target="_blank" rel="noopener noreferrer">history.json</a> through your private camera connection or on the Backoffice PC, then select it here. The file stays in this tab.</p>
+      <p class="small" id="trafficHistoryMessage" role="status">${dailyHistoryRows.length?'Daily counts loaded.':'Choose a history file to see daily totals here.'}</p>
+      <div class="table-wrap" id="trafficHistoryRows">${dailyHistoryTable()}</div></div>`;
+}
+document.addEventListener('change', async event=>{
+  const input=event.target;
+  if(input.id!=='trafficHistoryFile'||!input.files?.length)return;
+  const message=document.getElementById('trafficHistoryMessage');
+  const count=n=>Number.isSafeInteger(n)&&n>=0?n:null;
+  try {
+    const file=input.files[0];
+    if(file.size>2000000)throw new Error('History too large');
+    const json=JSON.parse(await file.text());
+    if(!json||Array.isArray(json)||typeof json!=='object')throw new Error('Expected date-indexed history');
+    const rows=Object.entries(json).map(([date,c])=>{
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!c||Array.isArray(c)||typeof c!=='object')throw new Error('Invalid history row');
+      const road=(count(c.road_negative_to_positive)??0)+(count(c.road_positive_to_negative)??0);
+      const trial1=count(c.fuel_road_negative_to_positive),trial2=count(c.fuel_road_positive_to_negative);
+      const trial=trial1===null&&trial2===null?null:(trial1??0)+(trial2??0);
+      return [date,road,trial,count(c.entered)??0,count(c.exited)??0,count(c.door_entered),count(c.door_exited)];
+    });
+    dailyHistoryRows=rows.sort((a,b)=>b[0].localeCompare(a[0]));
+    const target=document.getElementById('trafficHistoryRows');
+    if(target)target.innerHTML=dailyHistoryTable();
+    message.textContent=rows.length?`Loaded ${rows.length} business date(s).`:'No crossing history was saved.';
+  } catch {
+    message.textContent='Could not read this file. Choose the camera monitor history.json.';
+  } finally {input.value='';}
+});
 function renderTraffic() {
-  return section('Vehicle Traffic','Outdoor camera scorecard') + renderCameraFeeds() +
+  return section('Vehicle Traffic','Outdoor camera scorecard') + renderCameraFeeds() + renderDailyHistory() +
     `<div class="panel camera-score-controls">
       <a class="btn btn-primary" href="https://docs.google.com/spreadsheets/d/1YCzEfXkICCx9wYBVmGe_1pav9dlmATr1pcGBz6FsMGY/edit#gid=606696497" target="_blank" rel="noopener noreferrer">Open live counts in Google Sheets</a>
       <p class="small muted">Live counts require access to the private Google Sheet. Check <strong>Last sync UTC</strong> there for the most recent update.</p>
