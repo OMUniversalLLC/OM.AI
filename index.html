@@ -52,7 +52,7 @@
 </head><body><div id="app" class="loading-app">Loading dashboard</div><div id="toast-host" aria-live="polite"></div><script>window.OMAI_DEMO=true;window.OMAI_DEMO_DATA={"user": {"name": "Demo viewer", "role": "Viewer"}, "stores": [{"store_id": "DEMO", "name": "Demo workspace"}], "store": {"store_id": "DEMO", "name": "Demo workspace"}, "summary": {"series": [], "sales_days": 0}, "forecast": {"status": "insufficient", "points": [], "note": "Sales records are required."}, "integration": {"weather": "Not connected", "traffic": "Not connected", "news": "Not connected"}, "isDemo": true, "timestamp": "Demo only", "alerts": [], "impacts": [], "sales": [], "inventory": [], "vendors": [], "expenses": [], "operations": [], "compliance": [], "tasks": [], "incidents": [], "events": [], "signals": []};</script><script>
 (function () {
 'use strict';
-const NAV=[['overview','◈','Overview'],['workspace','▦','All modules'],['radar','◉','OM Radar'],['impact','⌘','OM Impact'],['insights','▥','OM Insights'],['predict','⌁','OM Predict'],['alerts','◇','OM Alerts'],['watch','◌','OM Watch'],['cameras','▣','OM Cameras'],['traffic','↔','Vehicle Traffic'],['wifi','⌁','OM WiFi'],['pc','▣','OM PC'],['orchestrator','✦','OM Orchestrator'],['control','☷','OM Control'],['finance','＄','OM Finance'],['fuel','⛽','Fuel Sources'],['purchases','▤','Purchases'],['lottery','◇','Lottery'],['reports','▥','Reports'],['team','☷','Team & Incidents'],['compliance','▣','Compliance'],['settings','⚙','Settings']];
+const NAV=[['overview','◈','Overview'],['workspace','▦','All modules'],['sheets','▦','Google Sheets'],['radar','◉','OM Radar'],['impact','⌘','OM Impact'],['insights','▥','OM Insights'],['predict','⌁','OM Predict'],['alerts','◇','OM Alerts'],['watch','◌','OM Watch'],['cameras','▣','OM Cameras'],['traffic','↔','Vehicle Traffic'],['wifi','⌁','OM WiFi'],['pc','▣','OM PC'],['orchestrator','✦','OM Orchestrator'],['control','☷','OM Control'],['finance','＄','OM Finance'],['fuel','⛽','Fuel Sources'],['purchases','▤','Purchases'],['lottery','◇','Lottery'],['reports','▥','Reports'],['team','☷','Team & Incidents'],['compliance','▣','Compliance'],['settings','⚙','Settings']];
 const titleMap=Object.fromEntries(NAV.map(x=>[x[0],x[2]]));
 const demo=Boolean(window.OMAI_DEMO);
 const state={view:Object.hasOwn(titleMap,location.hash.slice(1))?location.hash.slice(1):'overview',data:null,storeId:null,busy:false,mobileMenu:false,scenario:0};
@@ -88,10 +88,12 @@ function renderShell(){
 }
 function renderView(){
   const node=$('#view');if(!node||!state.data)return;
-  const views={overview:renderOverview,workspace:renderWorkspace,traffic:renderTraffic,purchases:renderPurchases,
+  const views={overview:renderOverview,workspace:renderWorkspace,sheets:renderSheetIntegration,traffic:renderTraffic,purchases:renderPurchases,
     lottery:renderLottery,reports:renderReports,team:renderTeam,radar:renderRadar,impact:renderImpact,insights:renderInsights,predict:renderPredict,alerts:renderAlerts,watch:renderWatch,cameras:renderCameras,wifi:renderWifi,pc:renderPcIntelligence,orchestrator:renderOrchestrator,control:renderControl,finance:renderFinance,fuel:renderFuelSources,compliance:renderCompliance,settings:renderSettings};
   clearInterval(liveCameraTimer);
   node.innerHTML=views[state.view]();
+  if(sheetModules[state.view]&&state.view!=='traffic')node.insertAdjacentHTML('afterbegin','<button class="btn btn-sm" style="margin-bottom:12px" data-sheet-module="'+state.view+'">Read source in Google Sheets view</button>');
+  updateSheetsForView();
   updateDashboardStatus();
   if(state.view==='traffic'&&liveCameraOrigin)startCameraPreviews();
   $('#page-title').textContent=titleMap[state.view];
@@ -405,7 +407,7 @@ function renderCameraFeeds() {
 function updateDashboardStatus() {
   const banner=document.getElementById('dashboard-status');
   if(!banner)return;
-  let message='OM AI Dashboard · Store records are private';
+  let message=sheetsSignedIn()?'OM AI Dashboard · Google Sheets authorized':'OM AI Dashboard · Connect Google Sheets to view records';
   if(state.view==='traffic') {
     const connected=document.querySelectorAll('[data-camera-feed][data-result="live"]').length;
     const failed=document.querySelectorAll('[data-camera-feed][data-result="unavailable"]').length;
@@ -490,7 +492,7 @@ function renderDailyHistory() {
   const privatePreview=liveCameraOrigin?liveCameraOrigin+'/history.json':'http://127.0.0.1:8765/history.json';
   return section('Daily traffic history','Saved totals by Florida business date')+
     `<div class="panel camera-score-controls">
-      <a class="btn btn-primary" href="https://docs.google.com/spreadsheets/d/1YCzEfXkICCx9wYBVmGe_1pav9dlmATr1pcGBz6FsMGY/edit#gid=211126" target="_blank" rel="noopener noreferrer">Open private daily history in Google Sheets</a>
+      <button class="btn btn-primary" data-sheet-module="history">View private daily history</button>
       <label class="btn btn-sm" for="trafficHistoryFile">Load camera history JSON</label>
       <input id="trafficHistoryFile" type="file" accept=".json,application/json">
       <p class="small muted">Download <a id="trafficHistorySource" href="${esc(privatePreview)}" target="_blank" rel="noopener noreferrer">history.json</a> through your private camera connection or on the Backoffice PC, then select it here. The file stays in this tab.</p>
@@ -523,9 +525,9 @@ document.addEventListener('change', async event=>{
   } finally {input.value='';}
 });
 function renderTraffic() {
-  return section('Vehicle Traffic','Outdoor camera scorecard') + renderCameraFeeds() + renderDailyHistory() +
+  return section('Vehicle Traffic','Outdoor camera scorecard') + renderCameraFeeds() + renderTrafficSheets() + renderDailyHistory() +
     `<div class="panel camera-score-controls">
-      <a class="btn btn-primary" href="https://docs.google.com/spreadsheets/d/1YCzEfXkICCx9wYBVmGe_1pav9dlmATr1pcGBz6FsMGY/edit#gid=606696497" target="_blank" rel="noopener noreferrer">Open live counts in Google Sheets</a>
+      <button class="btn btn-primary" data-sheet-module="traffic">View private live counts</button>
       <p class="small muted">Live counts require access to the private Google Sheet. Check <strong>Last sync UTC</strong> there for the most recent update.</p>
       <label class="btn btn-sm" for="trafficSnapshotFile">Load a saved count snapshot</label>
       <input id="trafficSnapshotFile" type="file" accept=".json,application/json">
@@ -685,6 +687,239 @@ addEventListener('hashchange',()=>{
   const next=Object.hasOwn(titleMap,requested)?requested:'overview';
   if(next!==state.view){state.view=next;renderView();}
 });
+
+const storesSheets={
+  traffic:['Vehicle Traffic','','Live Traffic'],
+  sales:['Plant City Daily Sales','','Daily Records'],
+  master:['Operations Management Master','','Dashboard']
+};
+const sheetModules={
+  traffic:['traffic','Live Traffic'],history:['traffic','Daily History'],insights:['sales','Daily Records'],reports:['sales','Daily Records'],
+  fuel:['sales','Mercury Sales Summary'],lottery:['sales','Mercury Sales Summary'],
+  finance:['master','Support_Expenses'],control:['master','Mercury_Tasks'],
+  team:['master','Mercury_Tasks'],purchases:['sales','Mercury Delivery Costs']
+};
+const readScope='https://www.googleapis.com/auth/spreadsheets.readonly';
+const workbookSettingsKey='om-universal.om-ai.sheets-workbooks';
+function readWorkbookID(value){
+  const input=String(value??'').trim();
+  if(/^[A-Za-z0-9_-]{20,}$/.test(input))return input;
+  const match=input.match(/^https:\/\/docs\.google\.com\/spreadsheets\/d\/([A-Za-z0-9_-]{20,})(?:\/[^?#\s]*)?(?:[?#][^\s]*)?$/);
+  return match?.[1]??'';
+}
+try {
+  const saved=JSON.parse(localStorage.getItem(workbookSettingsKey)||'{}');
+  for(const [key,book] of Object.entries(storesSheets))book[1]=readWorkbookID(saved?.[key]);
+} catch {}
+const webClientKey='om-universal.om-ai.sheets-web-client';
+const validClient=id=>/^[\w-]+\.apps\.googleusercontent\.com$/.test(id??'');
+const sheets={clientId:'',token:'',expires:0,auth:0,request:0,book:'traffic',tab:'Live Traffic',tabs:[],rows:[],page:0,message:'',traffic:null};
+try {const saved=localStorage.getItem(webClientKey);if(validClient(saved))sheets.clientId=saved;} catch {}
+const sheetsSignedIn=()=>Boolean(sheets.token)&&Date.now()<sheets.expires;
+const makeRows=rows=>rows.length?'<div class="table-wrap"><table class="table"><tbody>'+
+  rows.map(row=>'<tr>'+row.map(value=>'<td>'+esc(value)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>':
+  '<p class="small muted">No rows in this range.</p>';
+function renderSheetIntegration(){
+  const signedIn=sheetsSignedIn(), book=storesSheets[sheets.book];
+  return section('Google Sheets','Read records in OM AI with your authorized Google account.')+
+    '<div class="panel"><form id="omSheetConnect" class="camera-live-form"><label for="omSheetClient">OAuth web client ID</label>'+
+    '<input id="omSheetClient" required value="'+esc(sheets.clientId)+'" placeholder="…apps.googleusercontent.com">'+
+    Object.entries(storesSheets).map(([key,item])=>'<label for="omWorkbook-'+key+'">'+esc(item[0])+'</label><input id="omWorkbook-'+key+'" value="'+esc(item[1])+'" placeholder="Workbook URL or ID">').join('')+
+    '<button class="btn btn-primary" type="submit">'+(signedIn?'Save and reconnect':'Connect Google Sheets')+'</button>'+
+    (signedIn?'<button class="btn" type="button" data-sheet-command="disconnect">Disconnect</button>':'')+
+    '</form><p class="small muted">The web client must allow https://omuniversalllc.github.io as a JavaScript origin. Access is read-only.</p>'+
+    '<p role="status" id="omSheetMessage">'+esc(sheets.message||(signedIn?'Google Sheets authorized.':'Google sign-in required.'))+'</p></div>'+
+    '<div class="panel"><div class="camera-live-form"><label for="omSheetBook">Workbook</label><select id="omSheetBook">'+
+    Object.entries(storesSheets).map(([key,item])=>'<option value="'+key+'" '+(key===sheets.book?'selected':'')+'>'+esc(item[0])+'</option>').join('')+
+    '</select><label for="omSheetTab">Tab</label><select id="omSheetTab" '+(signedIn&&sheets.tabs.length?'':'disabled')+'>'+
+    sheets.tabs.map(tab=>'<option '+(tab===sheets.tab?'selected':'')+'>'+esc(tab)+'</option>').join('')+
+    '</select>'+(book[1]?'<a href="https://docs.google.com/spreadsheets/d/'+book[1]+'/edit" target="_blank" rel="noopener noreferrer">Open workbook</a>':'<span class="small muted">Workbook link needed</span>')+'</div>'+
+    (signedIn?makeRows(sheets.rows)+'<button class="btn" data-sheet-command="prev" '+(sheets.page?'':'disabled')+'>Previous 100 rows</button> '+
+    '<button class="btn" data-sheet-command="next" '+(sheets.rows.length===100?'':'disabled')+'>Next 100 rows</button> '+
+    '<button class="btn" data-sheet-command="refresh">Refresh</button>':'<p>Connect Google Sheets to view rows here.</p>')+'</div>'+
+    '<div class="panel"><h3>Integration coverage</h3><ul>'+
+    '<li>Vehicle Traffic · Latest traffic counts and saved daily totals.</li>'+
+    '<li>Plant City Daily Sales · Daily records, fuel and lottery summaries, scanned items, modifiers, and waste.</li>'+
+    '<li>Operations Management Master · Store summaries, expenses, checks, and tasks.</li>'+
+    '<li>Radar, PC, Wi-Fi, live alerts, and dedicated inventory, purchases, and incidents views still require a source and field mapping.</li></ul></div>';
+}
+function sheetMessage(message){
+  sheets.message=message;
+  const node=document.getElementById('omSheetMessage');
+  if(node)node.textContent=message;
+  updateDashboardStatus();
+}
+let googleIdentityLoad;
+function loadSheetsIdentity(){
+  if(window.google?.accounts?.oauth2)return Promise.resolve();
+  if(!googleIdentityLoad)googleIdentityLoad=new Promise((resolve,reject)=>{
+    const script=document.createElement('script');
+    script.src='https://accounts.google.com/gsi/client';
+    script.onload=resolve;
+    script.onerror=()=>{googleIdentityLoad=null;script.remove();reject(Error('Could not load Google sign-in.'));};
+    document.head.append(script);
+  });
+  return googleIdentityLoad;
+}
+async function getSheet(book,path,params,token){
+  const workbookID=storesSheets[book][1];
+  if(!workbookID)throw Error('Add the '+storesSheets[book][0]+' workbook URL under Google Sheets.');
+  const url=new URL('https://sheets.googleapis.com/v4/spreadsheets/'+workbookID+path);
+  url.search=new URLSearchParams(params);
+  const response=await fetch(url,{headers:{Authorization:'Bearer '+token},cache:'no-store'});
+  if(response.status===401)throw Error('Google authorization expired. Connect again.');
+  if(response.status===403)throw Error('Google denied access. Check workbook permissions and the Sheets API setup.');
+  if(!response.ok)throw Error('Google Sheets returned HTTP '+response.status+'.');
+  return response.json();
+}
+async function getSheetValues(book,tab,range,token){
+  const a1="'"+tab.replace(/'/g,"''")+"'!"+range;
+  const result=await getSheet(book,'/values/'+encodeURIComponent(a1),{valueRenderOption:'FORMATTED_VALUE'},token);
+  return result.values??[];
+}
+function columnLabel(n){
+  let value='';
+  for(;n>0;n=Math.floor((n-1)/26))value=String.fromCharCode(65+(n-1)%26)+value;
+  return value;
+}
+async function refreshSheets(){
+  if(!sheetsSignedIn()){renderView();return;}
+  const request=++sheets.request,{book,tab,page,token}=sheets;
+  sheetMessage('Reading Google Sheets…');
+  try{
+    const data=await getSheet(book,'',{fields:'sheets(properties(title,gridProperties(rowCount,columnCount)))'},token);
+    if(request!==sheets.request)return;
+    const tabs=(data.sheets??[]).map(sheet=>sheet.properties).filter(sheet=>sheet.gridProperties);
+    const selected=tabs.find(sheet=>sheet.title===tab)||tabs[0];
+    const first=page*100+1,last=Math.min(selected?.gridProperties.rowCount??0,first+99);
+    const range='A'+first+':'+columnLabel(selected?.gridProperties.columnCount??0)+last;
+    const rows=first<=last?await getSheetValues(book,selected.title,range,token):[];
+    if(request!==sheets.request||!sheetsSignedIn())return;
+    Object.assign(sheets,{tabs:tabs.map(sheet=>sheet.title),tab:selected?.title??'',rows});
+    sheetMessage(rows.length?'Rows '+first+'–'+(first+rows.length-1)+' loaded.':'No rows in this range.');
+  }catch(error){
+    if(request!==sheets.request)return;
+    sheets.rows=[];
+    sheetMessage(error.message);
+  }
+  if(state.view==='sheets')renderView();
+}
+function resetSheets(){
+  Object.assign(sheets,{token:'',expires:0,auth:sheets.auth+1,request:sheets.request+1,tabs:[],rows:[],page:0,message:'',traffic:null});
+}
+function selectSheet(book,tab=storesSheets[book][2]){
+  Object.assign(sheets,{book,tab,tabs:[],rows:[],page:0,request:sheets.request+1,message:''});
+}
+function trafficSheetsMarkup(){
+  if(!sheetsSignedIn())return '<p>Connect Google Sheets to display the latest counts here.</p>';
+  if(!sheets.traffic)return '<p>Reading traffic data…</p>';
+  return sheets.traffic.map(([label,result])=>'<h3>'+label+'</h3>'+
+    (result.status==='fulfilled'?makeRows(result.value):'<p>'+esc(result.reason.message)+'</p>')).join('');
+}
+let trafficRequest=0;
+async function readTrafficSheets(){
+  if(!sheetsSignedIn())return;
+  const request=++trafficRequest,{auth,token}=sheets;
+  const result=await Promise.allSettled([
+    getSheetValues('traffic','Live Traffic','A1:B21',token),
+    getSheetValues('traffic','Daily History','A1:G1000',token)
+  ]);
+  if(request!==trafficRequest||auth!==sheets.auth||!sheetsSignedIn())return;
+  if(result[1].status==='fulfilled')result[1].value=result[1].value.filter((row,i)=>i===0||/^\d{4}-\d{2}-\d{2}$/.test(row[0]));
+  sheets.traffic=[['Latest monitor update',result[0]],['Saved daily totals',result[1]]];
+  const node=document.getElementById('omSheetTraffic');
+  if(node)node.innerHTML=trafficSheetsMarkup();
+}
+function renderTrafficSheets(){
+  return section('Google Sheets traffic counts','Latest monitor update and saved totals')+
+    '<div class="panel"><button class="btn" data-sheet-module="traffic">Google Sheets connection</button> '+
+    '<button class="btn" data-sheet-command="traffic">Refresh counts</button>'+
+    '<div id="omSheetTraffic">'+trafficSheetsMarkup()+'</div></div>';
+}
+document.addEventListener('submit',async event=>{
+  if(event.target.id!=='omSheetConnect')return;
+  event.preventDefault();
+  const clientId=document.getElementById('omSheetClient').value.trim();
+  if(!validClient(clientId)){sheetMessage('Enter a web client ID ending in .apps.googleusercontent.com.');return;}
+  const configured={};
+  for(const key of Object.keys(storesSheets)){
+    const input=document.getElementById('omWorkbook-'+key).value.trim();
+    const id=readWorkbookID(input);
+    if(input&&!id){sheetMessage('Enter a Google Sheets URL or ID for '+storesSheets[key][0]+'.');return;}
+    configured[key]=id;
+  }
+  if(!Object.values(configured).some(Boolean)){sheetMessage('Add at least one workbook URL.');return;}
+  for(const [key,id] of Object.entries(configured))storesSheets[key][1]=id;
+  try{localStorage.setItem(workbookSettingsKey,JSON.stringify(configured));}catch{}
+  resetSheets();
+  if(!configured[sheets.book])selectSheet(Object.keys(configured).find(key=>configured[key]));
+  sheets.clientId=clientId;
+  renderView();
+  sheetMessage('Opening Google sign-in…');
+  const auth=sheets.auth;
+  try{
+    await loadSheetsIdentity();
+    if(auth!==sheets.auth)return;
+    window.google.accounts.oauth2.initTokenClient({
+      client_id:clientId,scope:readScope,include_granted_scopes:false,
+      error_callback:()=>{if(auth===sheets.auth)sheetMessage('Google sign-in closed or was blocked. Try again.');},
+      callback:response=>{
+        if(auth!==sheets.auth)return;
+        if(!response.access_token||!response.scope?.split(/\s+/).includes(readScope)){
+          sheetMessage('Google did not grant read-only access.');return;
+        }
+        Object.assign(sheets,{clientId,token:response.access_token,expires:Date.now()+Number(response.expires_in||3600)*1000});
+        try{localStorage.setItem(webClientKey,clientId);}catch{}
+        refreshSheets();
+      }
+    }).requestAccessToken({prompt:'select_account'});
+  }catch(error){if(auth===sheets.auth)sheetMessage(error.message);}
+});
+document.addEventListener('change',event=>{
+  if(event.target.id==='omSheetBook'&&Object.hasOwn(storesSheets,event.target.value)){
+    selectSheet(event.target.value);
+    refreshSheets();
+  }
+  if(event.target.id==='omSheetTab'){
+    sheets.tab=event.target.value;
+    sheets.page=0;
+    refreshSheets();
+  }
+});
+document.addEventListener('click',event=>{
+  const module=event.target.closest('[data-sheet-module]')?.dataset.sheetModule;
+  if(module){
+    if(Object.hasOwn(sheetModules,module))selectSheet(...sheetModules[module]);
+    location.hash='sheets';
+    return;
+  }
+  const command=event.target.closest('[data-sheet-command]')?.dataset.sheetCommand;
+  if(!command)return;
+  if(command==='disconnect'){
+    if(sheetsSignedIn())window.google?.accounts?.oauth2?.revoke(sheets.token,()=>{});
+    resetSheets();
+    renderView();
+    return;
+  }
+  if(command==='traffic'){if(sheetsSignedIn())readTrafficSheets();else location.hash='sheets';return;}
+  if(command==='next')sheets.page++;
+  if(command==='prev')sheets.page=Math.max(0,sheets.page-1);
+  refreshSheets();
+});
+let lastSheetView;
+function updateSheetsForView(){
+  if(lastSheetView===state.view)return;
+  lastSheetView=state.view;
+  if(state.view==='sheets')loadSheetsIdentity().catch(()=>{});
+  if(!sheetsSignedIn())return;
+  if(state.view==='sheets')refreshSheets();
+  if(state.view==='traffic')readTrafficSheets();
+}
+setInterval(()=>{
+  if(sheets.token&&!sheetsSignedIn()){resetSheets();renderView();}
+  if(sheetsSignedIn()&&state.view==='traffic'&&!document.hidden)readTrafficSheets();
+},60000);
+
 load(null);
 })();
 </script>
