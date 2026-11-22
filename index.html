@@ -5,31 +5,96 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>OM AI Operations</title>
   <style>
-    :root { color-scheme: light; font: 16px/1.55 system-ui, sans-serif; background: #f2f5f9; color: #17243a; }
-    main { max-width: 68rem; margin: auto; padding: clamp(1.25rem, 5vw, 4rem); }
-    header { background: #14243d; color: #fff; border-radius: 1rem; padding: clamp(1.25rem, 4vw, 3rem); }
-    h1 { font-size: clamp(2rem, 5vw, 3.25rem); margin: 0; }
-    h2 { font-size: 1.15rem; margin: 0; }
-    p { margin: .55rem 0 0; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: 1rem; margin: 1.5rem 0; }
-    article { min-width: 0; background: #fff; border: 1px solid #dbe4ef; border-radius: .85rem; padding: 1.2rem; }
-    a { color: #174f90; font-weight: 650; }
-    a:focus-visible { outline: 3px solid #2369bd; outline-offset: 3px; }
+    :root { color-scheme:light; font:16px/1.55 system-ui,sans-serif; color:#17243a; background:#f2f5f9; }
+    * { box-sizing:border-box; }
+    main { max-width:70rem; margin:auto; padding:clamp(1rem,5vw,3.5rem); }
+    header { background:#14243d; color:white; border-radius:1rem; padding:clamp(1.25rem,4vw,2.5rem); }
+    h1 { font-size:clamp(2rem,5vw,3rem); line-height:1.15; margin:0; }
+    h2,h3,p { margin:0; }
+    h3 { font-size:1rem; }
+    p { margin-top:.45rem; }
+    nav,.items { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,13rem),1fr)); gap:.75rem; }
+    nav { margin:1.25rem 0; }
+    a { color:#174f90; font-weight:650; }
+    a:focus-visible { outline:3px solid #2369bd; outline-offset:3px; }
+    nav a,.actions a { display:flex; align-items:center; min-height:3rem; padding:.65rem .85rem; border:1px solid #cbd7e6; border-radius:.55rem; background:white; text-decoration:none; }
+    nav a { justify-content:space-between; gap:.5rem; }
+    nav a[aria-current="location"] { background:#174476; color:white; border-color:#174476; }
+    nav a:not([aria-current]):hover,.actions a:hover { background:#e8f0fa; }
+    .module { background:white; border:1px solid #dbe4ef; border-radius:.85rem; padding:clamp(1rem,4vw,1.75rem); margin-bottom:.9rem; scroll-margin-top:.75rem; }
+    .items { margin:1rem 0; }
+    article { padding:.9rem; background:#f5f8fc; border-radius:.6rem; }
+    article p { color:#45566e; }
+    .actions { display:flex; flex-wrap:wrap; gap:.6rem; }
+    footer { margin-top:1.2rem; }
   </style>
 </head>
 <body>
   <main>
     <header>
       <h1>OM AI Operations</h1>
-      <p>Public project overview</p>
+      <p>Browse the project modules. Live records and monitoring are available through your private deployment.</p>
     </header>
-    <section class="grid" aria-label="Project modules">
-      <article><h2>Operations reporting</h2><p>Review sales, inventory, operating costs, and team tasks in the private dashboard.</p></article>
-      <article><h2>Vehicle traffic</h2><p>Track configured road and driveway crossings from the local monitoring app.</p></article>
-      <article><h2>Equipment health</h2><p>Review camera availability, computer health, and network status on the approved network.</p></article>
-      <article><h2>Task review</h2><p>Check scheduled job results and supporting evidence before recording a decision.</p></article>
+    <nav aria-label="Operations modules">
+      <a href="#operations">Operations reporting <span aria-hidden="true">&#8594;</span></a>
+      <a href="#traffic">Vehicle traffic <span aria-hidden="true">&#8594;</span></a>
+      <a href="#equipment">Equipment health <span aria-hidden="true">&#8594;</span></a>
+      <a href="#tasks">Task review <span aria-hidden="true">&#8594;</span></a>
+    </nav>
+    <section class="module" id="operations" aria-labelledby="operations-title">
+      <h2 id="operations-title">Operations reporting</h2>
+      <div class="items">
+        <article><h3>Sales and costs</h3><p>Review daily sales, fuel, and operating expenses.</p></article>
+        <article><h3>Inventory</h3><p>Check stock levels and items that need reordering.</p></article>
+        <article><h3>Store follow-up</h3><p>Review open tasks and vendor discrepancies.</p></article>
+      </div>
+      <div class="actions"><a href="https://github.com/OMUniversalLLC/OM.AI/tree/main/apps/operations-dashboard">Browse dashboard source</a></div>
     </section>
-    <a href="https://github.com/OMUniversalLLC/OM.AI">View project source on GitHub</a>
+    <section class="module" id="traffic" aria-labelledby="traffic-title">
+      <h2 id="traffic-title">Vehicle traffic</h2>
+      <div class="items">
+        <article><h3>Road crossings</h3><p>Review counts at the configured road line.</p></article>
+        <article><h3>Driveway crossings</h3><p>Review vehicles entering and leaving the lot.</p></article>
+      </div>
+      <div class="actions"><a href="https://github.com/OMUniversalLLC/OM.AI/blob/main/vehicle-traffic/SETUP.md">Open Vehicle Traffic setup</a></div>
+    </section>
+    <section class="module" id="equipment" aria-labelledby="equipment-title">
+      <h2 id="equipment-title">Equipment health</h2>
+      <div class="items">
+        <article><h3>Cameras</h3><p>Check stream availability and follow up on missing camera reports.</p></article>
+        <article><h3>Store computer</h3><p>Review CPU, memory, and disk status.</p></article>
+        <article><h3>Network</h3><p>Check configured devices and Wi-Fi status.</p></article>
+      </div>
+      <div class="actions">
+        <a href="https://github.com/OMUniversalLLC/OM.AI/tree/main/surveillance">Camera monitor</a>
+        <a href="https://github.com/OMUniversalLLC/OM.AI/tree/main/pc-agent">Computer monitor</a>
+        <a href="https://github.com/OMUniversalLLC/OM.AI/tree/main/network-agent">Network monitor</a>
+      </div>
+    </section>
+    <section class="module" id="tasks" aria-labelledby="tasks-title">
+      <h2 id="tasks-title">Task review</h2>
+      <div class="items">
+        <article><h3>Job status</h3><p>Check the run time and reported result.</p></article>
+        <article><h3>Supporting evidence</h3><p>Compare the result with the original source before recording a decision.</p></article>
+      </div>
+      <div class="actions"><a href="https://github.com/OMUniversalLLC/OM.AI/tree/main/apps-script">Browse task monitoring source</a></div>
+    </section>
+    <footer><a href="https://github.com/OMUniversalLLC/OM.AI">View project source on GitHub</a></footer>
   </main>
+  <script>
+    const navigation = [...document.querySelectorAll('nav a[href^="#"]')];
+    const modules = [...document.querySelectorAll('.module')];
+    function showModule() {
+      const requested = location.hash.slice(1);
+      const selected = modules.some(module => module.id === requested) ? requested : modules[0].id;
+      for (const module of modules) module.hidden = module.id !== selected;
+      for (const link of navigation) {
+        if (link.hash === '#' + selected) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+      }
+    }
+    addEventListener('hashchange', showModule);
+    showModule();
+  </script>
 </body>
 </html>
