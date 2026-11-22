@@ -1,0 +1,30 @@
+{
+  "source": "No live data connected; empty template",
+  "asOf": "",
+  "modelStatus": "unconfigured",
+  "dailyRecords": [],
+  "stores": [],
+  "quickC": {
+    "period": "",
+    "sales": 0,
+    "cogs": 0,
+    "salesMargin": 0,
+    "groceryPurchase": 0,
+    "differenceMargin": 0,
+    "daily": []
+  },
+  "fuelPrices": [],
+  "moneyMovements": [],
+  "mercury": {
+    "total": 0,
+    "completed": 0,
+    "inProgress": 0,
+    "waiting": 0,
+    "statusConflicts": 0,
+    "missingCompletionDate": 0,
+    "missingTicketIds": 0
+  },
+  "alerts": [
+    "No live store data connected. Configure an authenticated backend before production."
+  ]
+}
