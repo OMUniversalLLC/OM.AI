@@ -1,4 +1,4 @@
-name: OM AI MoneCloud Inventory Validation
+name: OM AI MoneCloud Inventory Validation V2
 
 on:
   push:
@@ -9,6 +9,7 @@ on:
       - 'automation-foundation/monecloud_login.py'
       - 'automation-foundation/monecloud_mapper.py'
       - 'automation-foundation/monecloud_deep_mapper.py'
+      - 'automation-foundation/monecloud_inventory_v2.py'
   workflow_dispatch:
 
 permissions:
@@ -49,6 +50,9 @@ jobs:
       - name: Validate Python syntax
         run: python -m py_compile automation-foundation/monecloud_login.py automation-foundation/monecloud_mapper.py automation-foundation/monecloud_deep_mapper.py
 
+      - name: Test inventory extractor with synthetic data
+        run: python automation-foundation/monecloud_inventory_v2.py
+
       - name: Verify MoneCloud login
 
         env:
@@ -56,5 +60,6 @@ jobs:
           MONECLOUD_PASSWORD: ${{ secrets.MONECLOUD_PASSWORD }}
           MONECLOUD_ENABLED: ${{ vars.MONECLOUD_ENABLED }}
           AUTOMATION_MODE: ${{ vars.AUTOMATION_MODE }}
+          MONECLOUD_STORE_ID: ${{ secrets.MONECLOUD_STORE_ID }}
 
         run: python automation-foundation/monecloud_login.py
