@@ -6,34 +6,53 @@ on:
       - feature/automation-foundation
     paths:
       - '.github/workflows/monecloud-login.yml'
+      - 'automation-foundation/monecloud_login.py'
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: om-ai-monecloud-login
+  cancel-in-progress: false
+
 jobs:
+
   login-test:
+
     runs-on: ubuntu-24.04
+
     environment: om-ai-automation
+
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v5
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
         with:
           persist-credentials: false
 
-      - uses: actions/setup-python@v6
+      - name: Setup Python
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: pip install -r automation-foundation/requirements.txt
 
       - name: Install Chromium
         run: python -m playwright install --with-deps chromium
 
+      - name: Validate Python syntax
+        run: python -m py_compile automation-foundation/monecloud_login.py
+
       - name: Verify MoneCloud login
+
         env:
           MONECLOUD_USERNAME: ${{ secrets.MONECLOUD_USERNAME }}
           MONECLOUD_PASSWORD: ${{ secrets.MONECLOUD_PASSWORD }}
+          MONECLOUD_ENABLED: ${{ vars.MONECLOUD_ENABLED }}
+          AUTOMATION_MODE: ${{ vars.AUTOMATION_MODE }}
+
         run: python automation-foundation/monecloud_login.py
