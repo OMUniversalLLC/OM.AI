@@ -125,7 +125,246 @@ def inspect_navigation(page):
     print("Private URLs exported: 0")
 
 
+def inventory_structure_diagnostics(page):
+
+    import time
+
+    print("================================")
+    print("OM AI PHASE 6B STRUCTURE DIAGNOSTICS")
+    print("================================")
+
+    script = r"""
+        () => {
+            const visible = e =>
+                e.getClientRects().length > 0 &&
+                getComputedStyle(e).visibility !== "hidden";
+
+            const norm = s =>
+                (s || "").toLowerCase()
+                    .replace(/\s+/g, " ").trim();
+
+            const result = {
+                tables: [],
+                selectCount: 0,
+                locationControls: 0,
+                placeholderSelections: 0,
+                textInputs: 0,
+                gridRows: 0,
+                busyIndicators: 0,
+                emptyMessages: 0
+            };
+
+            const tables =
+                Array.from(document.querySelectorAll("table"));
+
+            for (let i = 0; i < tables.length; i++) {
+
+                const table = tables[i];
+
+                const headerRows = table.tHead
+                    ? Array.from(table.tHead.rows)
+                    : [];
+
+                const bodyRows =
+                    Array.from(table.tBodies)
+                    .flatMap(b => Array.from(b.rows));
+
+                const headerWidths = [];
+
+                let inventoryHeader = false;
+                let compatibleRows = 0;
+
+                for (const header of headerRows) {
+
+                    const cells = Array.from(header.cells);
+
+                    headerWidths.push(cells.length);
+
+                    const labels = cells.map(
+                        c => norm(c.innerText)
+                    );
+
+                    const hasUPC = labels.some(
+                        x => /\b(upc|barcode)\b/.test(x)
+                    );
+
+                    const hasName = labels.some(
+                        x => /\b(item name|product name|description)\b/.test(x)
+                    );
+
+                    const hasPrice = labels.some(
+                        x => /\b(price|retail)\b/.test(x)
+                    );
+
+                    if (hasUPC && hasName && hasPrice) {
+
+                        inventoryHeader = true;
+
+                        if (cells.every(c =>
+                            c.colSpan === 1 &&
+                            c.rowSpan === 1
+                        )) {
+
+                            compatibleRows = bodyRows.filter(
+                                row =>
+                                    visible(row) &&
+                                    row.cells.length === cells.length &&
+                                    Array.from(row.cells).every(
+                                        c => c.colSpan === 1
+                                    )
+                            ).length;
+                        }
+                    }
+                }
+
+                const widths = {};
+
+                for (const row of bodyRows) {
+
+                    const count = row.cells.length;
+
+                    widths[count] =
+                        (widths[count] || 0) + 1;
+                }
+
+                result.tables.push({
+                    number: i + 1,
+                    visible: visible(table),
+                    headerRows: headerRows.length,
+                    headerWidths: headerWidths,
+                    bodyRows: bodyRows.length,
+                    visibleBodyRows: bodyRows.filter(visible).length,
+                    bodyWidths: widths,
+                    inputCells: table.querySelectorAll(
+                        "tbody td input"
+                    ).length,
+                    inventoryHeader: inventoryHeader,
+                    compatibleRows: compatibleRows
+                });
+            }
+
+            const selects = Array.from(
+                document.querySelectorAll("select")
+            ).filter(visible);
+
+            result.selectCount = selects.length;
+
+            for (const select of selects) {
+
+                const label = norm(
+                    [
+                        select.name,
+                        select.id,
+                        select.getAttribute("aria-label"),
+                        ...Array.from(select.labels || [])
+                            .map(x => x.innerText)
+                    ].filter(Boolean).join(" ")
+                );
+
+                if (/\b(location|store|site)\b/.test(label)) {
+                    result.locationControls++;
+                }
+
+                const option =
+                    select.selectedOptions[0];
+
+                if (
+                    !option ||
+                    !option.value ||
+                    /^(select|choose|please select)(\b|$)/
+                        .test(norm(option.textContent))
+                ) {
+                    result.placeholderSelections++;
+                }
+            }
+
+            result.textInputs = Array.from(
+                document.querySelectorAll(
+                    'input[type="text"], input[type="search"]'
+                )
+            ).filter(visible).length;
+
+            result.gridRows = Array.from(
+                document.querySelectorAll(
+                    '[role="row"]'
+                )
+            ).filter(visible).length;
+
+            result.busyIndicators = Array.from(
+                document.querySelectorAll(
+                    '[aria-busy="true"], [role="progressbar"]'
+                )
+            ).filter(visible).length;
+
+            result.emptyMessages = Array.from(
+                document.querySelectorAll(
+                    'td, [role="status"], [role="alert"]'
+                )
+            ).filter(e =>
+                visible(e) &&
+                /^(no data|no records|no results|no items|no matching records)/i
+                    .test((e.innerText || "").trim())
+            ).length;
+
+            return result;
+        }
+    """
+
+    deadline = time.monotonic() + 45
+
+    while True:
+
+        if page.is_closed() or not trusted(page, INVENTORY_PATH):
+            raise RuntimeError("Inventory destination changed")
+
+        result = page.evaluate(script)
+
+        ready = any(
+            table["inventoryHeader"]
+            and table["compatibleRows"] > 0
+            for table in result["tables"]
+        )
+
+        if ready or time.monotonic() >= deadline:
+            break
+
+        page.wait_for_timeout(3000)
+
+    print("Inventory loading readiness:", ready)
+
+    print("Total HTML tables:", len(result["tables"]))
+
+    for table in result["tables"]:
+
+        print(
+            "TABLE", table["number"],
+            "| visible:", table["visible"],
+            "| header rows:", table["headerRows"],
+            "| header widths:", table["headerWidths"],
+            "| body rows:", table["bodyRows"],
+            "| visible body rows:", table["visibleBodyRows"],
+            "| body widths:", table["bodyWidths"],
+            "| input cells:", table["inputCells"],
+            "| inventory header:", table["inventoryHeader"],
+            "| compatible rows:", table["compatibleRows"]
+        )
+
+    print("Visible select controls:", result["selectCount"])
+    print("Location controls:", result["locationControls"])
+    print("Placeholder selections:", result["placeholderSelections"])
+    print("Text input controls:", result["textInputs"])
+    print("ARIA grid rows:", result["gridRows"])
+    print("Busy indicators:", result["busyIndicators"])
+    print("Empty-state messages:", result["emptyMessages"])
+
+    print("Private product values exported: 0")
+    print("OM AI PHASE 6B DIAGNOSTICS COMPLETED")
+    print("================================")
+
+
 def validate_inventory_rows(page):
+    inventory_structure_diagnostics(page)
+
 
     print("================================")
     print("OM AI PHASE 6 ROW VALIDATION")
