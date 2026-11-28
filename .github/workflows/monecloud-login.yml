@@ -1,4 +1,4 @@
-name: OM AI MoneCloud Login and Mapping
+name: OM AI MoneCloud Deep Mapping
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
       - '.github/workflows/monecloud-login.yml'
       - 'automation-foundation/monecloud_login.py'
       - 'automation-foundation/monecloud_mapper.py'
+      - 'automation-foundation/monecloud_deep_mapper.py'
   workflow_dispatch:
 
 permissions:
@@ -46,7 +47,7 @@ jobs:
         run: python -m playwright install --with-deps chromium
 
       - name: Validate Python syntax
-        run: python -m py_compile automation-foundation/monecloud_login.py
+        run: python -m py_compile automation-foundation/monecloud_login.py automation-foundation/monecloud_mapper.py automation-foundation/monecloud_deep_mapper.py
 
       - name: Verify MoneCloud login
 

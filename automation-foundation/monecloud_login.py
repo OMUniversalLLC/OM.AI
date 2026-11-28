@@ -4,6 +4,7 @@ from urllib.parse import urlsplit
 
 from playwright.sync_api import sync_playwright
 from monecloud_mapper import map_dashboard
+from monecloud_deep_mapper import deep_map_dashboard
 
 LOGIN_URL = "https://www.mostedge.com/login"
 LOGIN_HOST = "www.mostedge.com"
@@ -184,6 +185,8 @@ def main():
                             print("DASHBOARD ROUTE REACHED")
                             print("MoneCloud dashboard reached.")
                             map_dashboard(tab)
+                            stage = "DEEP_MAPPING"
+                            deep_map_dashboard(tab)
                             print("No business records modified.")
                             print("============================")
 
