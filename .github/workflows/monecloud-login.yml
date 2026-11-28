@@ -1,4 +1,4 @@
-name: OM AI MoneCloud Login Test
+name: OM AI MoneCloud Login and Mapping
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/monecloud-login.yml'
       - 'automation-foundation/monecloud_login.py'
+      - 'automation-foundation/monecloud_mapper.py'
   workflow_dispatch:
 
 permissions:

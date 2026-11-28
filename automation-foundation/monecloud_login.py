@@ -3,6 +3,7 @@ import time
 from urllib.parse import urlsplit
 
 from playwright.sync_api import sync_playwright
+from monecloud_mapper import map_dashboard
 
 LOGIN_URL = "https://www.mostedge.com/login"
 LOGIN_HOST = "www.mostedge.com"
@@ -182,6 +183,7 @@ def main():
                             print("============================")
                             print("DASHBOARD ROUTE REACHED")
                             print("MoneCloud dashboard reached.")
+                            map_dashboard(tab)
                             print("No business records modified.")
                             print("============================")
 
