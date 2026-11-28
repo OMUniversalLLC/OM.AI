@@ -1,0 +1,8 @@
+__pycache__/
+.env
+.env.*
+*.local.json
+storage-state.json
+playwright/.auth/
+logs/
+reports/
