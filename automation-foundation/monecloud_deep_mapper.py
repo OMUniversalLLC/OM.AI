@@ -125,6 +125,194 @@ def inspect_navigation(page):
     print("Private URLs exported: 0")
 
 
+def validate_inventory_rows(page):
+
+    print("================================")
+    print("OM AI PHASE 6 ROW VALIDATION")
+    print("================================")
+
+    if not trusted(page, INVENTORY_PATH):
+        raise RuntimeError("Unexpected inventory destination")
+
+    result = page.evaluate("""
+        () => {
+            const normalize = value =>
+                (value || "").toLowerCase()
+                    .replace(/\\s+/g, " ").trim();
+
+            const visible = element =>
+                element.getClientRects().length > 0
+                && getComputedStyle(element).visibility
+                    !== "hidden";
+
+            const candidates = [];
+
+            for (const table of document.querySelectorAll("table")) {
+
+                if (!visible(table) || !table.tHead) {
+                    continue;
+                }
+
+                for (const headerRow of table.tHead.rows) {
+
+                    const cells = Array.from(headerRow.cells);
+
+                    if (
+                        cells.some(c =>
+                            c.colSpan !== 1 || c.rowSpan !== 1
+                        )
+                    ) {
+                        continue;
+                    }
+
+                    const headers = cells.map(c =>
+                        normalize(c.innerText)
+                    );
+
+                    const upc = headers.findIndex(h =>
+                        /\\b(upc|barcode)\\b/.test(h)
+                    );
+
+                    const name = headers.findIndex(h =>
+                        /^(item name|product name|description|item description)$/.test(h)
+                    );
+
+                    const price = headers.findIndex(h =>
+                        /^(price|retail|retail price|selling price)$/.test(h)
+                    );
+
+                    if (
+                        upc < 0 ||
+                        name < 0 ||
+                        price < 0
+                    ) {
+                        continue;
+                    }
+
+                    const rows = Array.from(table.tBodies)
+                        .flatMap(body => Array.from(body.rows))
+                        .filter(row =>
+                            visible(row)
+                            && row.cells.length === headers.length
+                            && Array.from(row.cells).every(
+                                c => c.colSpan === 1
+                            )
+                        );
+
+                    candidates.push({
+                        rows,
+                        upc,
+                        name,
+                        price
+                    });
+
+                    break;
+                }
+            }
+
+            const populated = candidates.filter(
+                item => item.rows.length > 0
+            );
+
+            const output = {
+                matchingTables: candidates.length,
+                populatedTables: populated.length,
+                sampledRows: 0,
+                validUPC: 0,
+                validName: 0,
+                validPrice: 0,
+                validRows: 0,
+                duplicateUPC: 0
+            };
+
+            if (populated.length !== 1) {
+                return output;
+            }
+
+            const target = populated[0];
+            const seen = new Set();
+
+            for (const row of target.rows.slice(0, 50)) {
+
+                output.sampledRows++;
+
+                const upc =
+                    row.cells[target.upc].innerText.trim();
+
+                const name =
+                    row.cells[target.name].innerText.trim();
+
+                const price =
+                    row.cells[target.price].innerText
+                        .replace(/[$,]/g, "").trim();
+
+                const upcOK =
+                    /^(\\d{8}|\\d{12}|\\d{13}|\\d{14})$/
+                        .test(upc);
+
+                const nameOK = name.length > 0;
+
+                const priceOK =
+                    /^\\d+(\\.\\d{1,2})?$/.test(price)
+                    && Number.isFinite(Number(price));
+
+                if (upcOK) {
+                    output.validUPC++;
+
+                    if (seen.has(upc)) {
+                        output.duplicateUPC++;
+                    }
+
+                    seen.add(upc);
+                }
+
+                if (nameOK) {
+                    output.validName++;
+                }
+
+                if (priceOK) {
+                    output.validPrice++;
+                }
+
+                if (upcOK && nameOK && priceOK) {
+                    output.validRows++;
+                }
+            }
+
+            return output;
+        }
+    """)
+
+    print("Matching inventory tables:",
+          result["matchingTables"])
+
+    print("Populated inventory tables:",
+          result["populatedTables"])
+
+    print("Rows sampled:", result["sampledRows"])
+    print("Valid UPC format:", result["validUPC"])
+    print("Valid product names:", result["validName"])
+    print("Valid retail prices:", result["validPrice"])
+    print("Complete valid rows:", result["validRows"])
+    print("Repeated UPC occurrences:", result["duplicateUPC"])
+
+    print("Raw product records exported: 0")
+
+    if (
+        result["populatedTables"] != 1
+        or result["sampledRows"] == 0
+        or result["validRows"] == 0
+    ):
+        print("PHASE 6 ROW VALIDATION: INCONCLUSIVE")
+        raise RuntimeError("Inventory rows require further mapping")
+
+    if result["validRows"] == result["sampledRows"]:
+        print("PHASE 6 ROW VALIDATION: PASSED")
+    else:
+        print("PHASE 6 ROW VALIDATION: PARTIAL")
+        raise RuntimeError("Some inventory rows failed validation")
+
+
 def inspect_inventory(dashboard):
 
     print("================================")
@@ -234,6 +422,7 @@ def inspect_inventory(dashboard):
 
         if tables.count() > 0 and len(detected_headers) >= 2:
             print("Inventory schema verification: PASSED")
+            validate_inventory_rows(page)
         else:
             print("Inventory schema verification: INCONCLUSIVE")
 

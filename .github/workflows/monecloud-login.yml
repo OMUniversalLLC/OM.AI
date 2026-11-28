@@ -1,4 +1,4 @@
-name: OM AI MoneCloud Deep Mapping
+name: OM AI MoneCloud Inventory Validation
 
 on:
   push:
