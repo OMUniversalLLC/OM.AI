@@ -1,0 +1,36 @@
+﻿name: OM AI Automation Test
+
+on:
+  push:
+    branches:
+      - feature/automation-foundation
+    paths:
+      - 'automation-foundation/**'
+      - '.github/workflows/automation-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r automation-foundation/requirements.txt
+
+      - name: Install Chromium
+        run: python -m playwright install --with-deps chromium
+
+      - name: Run browser extraction test
+        run: python automation-foundation/smoke_test.py

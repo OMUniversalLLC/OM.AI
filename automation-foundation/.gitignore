@@ -6,3 +6,5 @@ storage-state.json
 playwright/.auth/
 logs/
 reports/
+
+.venv/
